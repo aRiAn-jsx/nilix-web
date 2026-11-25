@@ -1,0 +1,304 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import { API_BASE, SANDBOX_BASE, GROUPS, EVENTS, ERRORS, SCOPES } from '../data/api';
+import { highlight } from '../lib/code';
+import { type Lang, L, href, t } from '../i18n/ui';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const fa = lang === 'fa';
+const title = fa ? 'مستندات API نیلیکس؛ اتصال انبار، حسابداری و CRM' : 'nilix API reference: connect warehouse, accounting and CRM';
+const description = fa
+  ? 'مرجع REST API نیلیکس برای شرکا: احراز هویت با کلید API، کالا، موجودی، سفارش، فاکتور، مشتری، ورود و خروج اکسل و وبهوک‌ها، با نمونه‌کد.'
+  : 'The nilix partner REST API: API-key auth, products, inventory, orders, invoices, customers, Excel import/export and webhooks, with code samples.';
+
+const curl = `curl ${API_BASE}/orders?status=delivered \\
+  -H "Authorization: Bearer nlx_test_4f9c..." \\
+  -H "Accept-Language: ${fa ? 'fa' : 'en'}"`;
+const node = `const res = await fetch("${API_BASE}/inventory", {
+  method: "PUT",
+  headers: {
+    "Authorization": \`Bearer \${process.env.NILIX_KEY}\`,
+    "Content-Type": "application/json",
+    "Idempotency-Key": crypto.randomUUID(),
+  },
+  body: JSON.stringify({
+    warehouse: "mashhad-main",
+    items: [{ external_id: "WMS-10042", stock_cartons: 340 }],
+  }),
+});
+const result = await res.json(); // { updated: 1, not_found: [] }`;
+const python = `import os, requests
+
+r = requests.get(
+    "${API_BASE}/orders",
+    params={"status": "delivered", "updated_since": "2026-11-01T00:00:00Z"},
+    headers={"Authorization": f"Bearer {os.environ['NILIX_KEY']}"},
+)
+for order in r.json()["data"]:
+    print(order["invoice_id"], order["totals"]["payable"])`;
+const errorBody = `{
+  "error": {
+    "code": "validation_failed",
+    "message": "${fa ? 'کد IRC باید ۱۶ رقم باشد' : 'IRC must be 16 digits'}",
+    "details": [{ "field": "items[3].compliance.irc", "rule": "digits:16" }],
+    "request_id": "req_9b2e71"
+  }
+}`;
+const webhookPayload = `POST https://erp.example.com/nilix/webhook
+X-Nilix-Event: order.delivered
+X-Nilix-Signature: t=1763628611,v1=5f2b9c...
+
+{
+  "id": "evt_7Hc1",
+  "type": "order.delivered",
+  "created_at": "2026-11-20T09:10:11Z",
+  "data": { "order_id": "ord_10428", "invoice_id": "inv_10428", "payable": 12584000 }
+}`;
+const verify = `import crypto from "node:crypto";
+
+// raw = the request body exactly as received (a string, not parsed JSON)
+function isFromNilix(raw, header, secret) {
+  const parts = Object.fromEntries(header.split(",").map((p) => p.split("=")));
+  const expected = crypto
+    .createHmac("sha256", secret)
+    .update(\`\${parts.t}.\${raw}\`)
+    .digest("hex");
+  const fresh = Math.abs(Date.now() / 1000 - Number(parts.t)) < 300;
+  return fresh && crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(parts.v1));
+}`;
+const registerHook = `curl -X POST ${API_BASE}/webhooks \\
+  -H "Authorization: Bearer nlx_live_..." \\
+  -H "Content-Type: application/json" \\
+  -d '{ "url": "https://erp.example.com/nilix/webhook",
+        "events": ["order.confirmed", "order.delivered", "invoice.paid"] }'`;
+
+const toc = [
+  { id: 'overview', t: fa ? 'معرفی' : 'Overview' },
+  { id: 'quickstart', t: fa ? 'شروع سریع' : 'Quickstart' },
+  { id: 'auth', t: fa ? 'احراز هویت' : 'Authentication' },
+  { id: 'conventions', t: fa ? 'قواعد کلی' : 'Conventions' },
+  { id: 'errors', t: fa ? 'خطاها' : 'Errors' },
+  ...GROUPS.map((g) => ({ id: g.id, t: L(lang, g.title), sub: g.endpoints.map((e) => ({ id: e.id, t: L(lang, e.title), m: e.method })) })),
+  { id: 'webhooks', t: fa ? 'وبهوک‌ها' : 'Webhooks' },
+  { id: 'changelog', t: fa ? 'تغییرات' : 'Changelog' },
+];
+
+const techArticle = {
+  '@context': 'https://schema.org',
+  '@type': 'TechArticle',
+  headline: title,
+  description,
+  inLanguage: fa ? 'fa-IR' : 'en',
+  publisher: { '@id': 'https://nilix.co/#org' },
+  proficiencyLevel: 'Beginner',
+};
+---
+<Base lang={lang} title={title} description={description} path="/docs" jsonLd={[techArticle]} scene="paper">
+  <section class="docs-hero" data-scene="ink">
+    <div class="wrap">
+      <ol class="breadcrumb"><li><a href={href(lang, '/')}>{t(lang, 'home')}</a></li><li><span aria-current="page">{fa ? 'مستندات API' : 'API docs'}</span></li></ol>
+      <div class="dh-row">
+        <div>
+          <span class="eyebrow"><Icon name="code" size={16} />{fa ? 'برای توسعه‌دهندگان' : 'For developers'}</span>
+          <h1 class="display" style="font-size:clamp(2.2rem,5vw,4.2rem);margin-top:18px">{fa ? 'مستندات API نیلیکس' : 'nilix API reference'}</h1>
+          <p class="lead" style="margin-top:18px">{fa ? 'داده را بین نیلیکس و نرم‌افزار انبار، حسابداری، CRM یا ERP خودتان در هر دو جهت جابه‌جا کنید.' : 'Move data both ways between nilix and your warehouse, accounting, CRM or ERP software.'}</p>
+        </div>
+        <div class="dh-card">
+          <div class="kv"><span>{fa ? 'نسخه' : 'Version'}</span><b class="ltr">v1 · {fa ? 'پیش‌نمایش' : 'preview'}</b></div>
+          <div class="kv"><span>{fa ? 'آدرس پایه' : 'Base URL'}</span><code class="ltr">{API_BASE}</code></div>
+          <div class="kv"><span>{fa ? 'محیط آزمایشی' : 'Sandbox'}</span><code class="ltr">{SANDBOX_BASE}</code></div>
+          <div class="kv"><span>{fa ? 'قالب' : 'Format'}</span><b class="ltr">JSON · UTF-8 · HTTPS</b></div>
+          <a class="btn btn-sm" href={href(lang, '/contact?topic=api')}>{fa ? 'درخواست کلید API' : 'Request an API key'}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap docs" data-scene="paper">
+    <aside class="toc" aria-label={fa ? 'فهرست مستندات' : 'Docs contents'}>
+      <nav>
+        {toc.map((x) => (
+          <div>
+            <a href={`#${x.id}`} class="toc-l1">{x.t}</a>
+            {'sub' in x && x.sub && (
+              <div class="toc-sub">{x.sub.map((s) => <a href={`#${s.id}`}><em class={`m-${s.m.toLowerCase()}`}>{s.m}</em>{s.t}</a>)}</div>
+            )}
+          </div>
+        ))}
+      </nav>
+    </aside>
+
+    <article class="doc-body">
+      <section id="overview" class="doc-sec">
+        <h2>{fa ? 'معرفی' : 'Overview'}</h2>
+        <div class="note">
+          <Icon name="sparkle" size={20} />
+          <p>{fa ? 'API نیلیکس در نسخه‌ی پیش‌نمایش است و دسترسی با درخواست داده می‌شود. ممکن است پیش از نسخه‌ی پایدار تغییرهای کوچکی داشته باشد که در بخش «تغییرات» اعلام می‌شود.' : 'The nilix API is in preview and access is granted on request. Small changes may land before the stable release; they are announced in the changelog.'}</p>
+        </div>
+        <p>{fa ? 'این API برای شرکت‌های پخش و شرکای نرم‌افزاری آن‌ها ساخته شده است. با آن می‌توانید:' : 'The API is built for distributors and their software partners. With it you can:'}</p>
+        <ul>
+          <li>{fa ? 'کاتالوگ و قیمت‌ها را از نرم‌افزار انبار یا حسابداری به نیلیکس بفرستید؛' : 'push your catalogue and prices from warehouse or accounting software into nilix;'}</li>
+          <li>{fa ? 'موجودی انبار را خودکار و زمان‌بندی‌شده همگام کنید؛' : 'keep stock levels in sync on a schedule;'}</li>
+          <li>{fa ? 'سفارش‌ها را تأیید کنید و وضعیت ارسال را ثبت کنید؛' : 'confirm orders and record shipping;'}</li>
+          <li>{fa ? 'فاکتورها و دریافتی‌ها را به حسابداری ببرید؛' : 'take invoices and payments into your books;'}</li>
+          <li>{fa ? 'مشتریان و سابقه‌ی خرید را با CRM هماهنگ نگه دارید؛' : 'keep customers and purchase history aligned with your CRM;'}</li>
+          <li>{fa ? 'با وبهوک، لحظه‌ی ثبت یا تحویل سفارش خبردار شوید.' : 'hear about new and delivered orders instantly through webhooks.'}</li>
+        </ul>
+        <p>{fa ? 'اگر برنامه‌نویس ندارید، همین داده‌ها را با فایل اکسل از پنل شرکت پخش هم می‌توانید وارد یا خارج کنید (بخش ' : 'No developer? The same data moves through Excel files in the distributor panel (see '}<a href="#files">{fa ? 'ورود و خروج با فایل' : 'File import & export'}</a>{fa ? ').' : ').'}</p>
+      </section>
+
+      <section id="quickstart" class="doc-sec">
+        <h2>{fa ? 'شروع سریع' : 'Quickstart'}</h2>
+        <ol>
+          <li>{fa ? 'از ' : 'Ask for a key on the '}<a href={href(lang, '/contact?topic=api')}>{fa ? 'فرم تماس' : 'contact form'}</a>{fa ? ' کلید آزمایشی (با پیشوند nlx_test_) بگیرید.' : ' — you get a test key (prefix nlx_test_).'}</li>
+          <li>{fa ? 'درخواست‌ها را به محیط آزمایشی بفرستید؛ هیچ سفارش واقعی ساخته نمی‌شود.' : 'Send requests to the sandbox; no real orders are created.'}</li>
+          <li>{fa ? 'بعد از آزمایش، کلید اصلی (nlx_live_) را جایگزین کنید.' : 'When ready, switch to your live key (nlx_live_).'}</li>
+        </ol>
+        <h3>cURL</h3>
+        <pre class="code"><code set:html={highlight(curl)} /></pre>
+        <h3>Node.js</h3>
+        <pre class="code"><code set:html={highlight(node)} /></pre>
+        <h3>Python</h3>
+        <pre class="code"><code set:html={highlight(python)} /></pre>
+      </section>
+
+      <section id="auth" class="doc-sec">
+        <h2>{fa ? 'احراز هویت' : 'Authentication'}</h2>
+        <p>{fa ? 'هر درخواست باید کلید API را در هدر Authorization داشته باشد. کلید را فقط روی سرور نگه دارید و هرگز در اپ موبایل یا کد مرورگر قرار ندهید.' : 'Every request carries your API key in the Authorization header. Keep keys on your server, never in a mobile app or browser code.'}</p>
+        <pre class="code"><code>Authorization: Bearer nlx_live_xxxxxxxxxxxxxxxx</code></pre>
+        <p>{fa ? 'برای هر اتصال یک کلید جدا بسازید و فقط دسترسی‌های لازم (scope) را به آن بدهید. مثلاً کلیدی که فقط موجودی را از انبار می‌فرستد، فقط inventory:write لازم دارد.' : 'Create one key per connection and give it only the scopes it needs — a key that only pushes stock needs just inventory:write.'}</p>
+        <div class="chips">{SCOPES.map((s) => <code class="chip ltr">{s}</code>)}</div>
+      </section>
+
+      <section id="conventions" class="doc-sec">
+        <h2>{fa ? 'قواعد کلی' : 'Conventions'}</h2>
+        <table>
+          <tbody>
+            <tr><th>{fa ? 'صفحه‌بندی' : 'Pagination'}</th><td>{fa ? 'پاسخ‌های فهرستی next_cursor دارند؛ آن را در cursor درخواست بعد بفرستید. null یعنی صفحه‌ی آخر.' : 'List responses include next_cursor; pass it as cursor. null means the last page.'}</td></tr>
+            <tr><th>{fa ? 'تکرار امن' : 'Idempotency'}</th><td>{fa ? 'برای POST و PUT هدر Idempotency-Key بفرستید تا ارسال دوباره (مثلاً بعد از قطعی شبکه) دو بار اعمال نشود. کلیدها ۲۴ ساعت نگه‌داری می‌شوند.' : 'Send an Idempotency-Key header with POST and PUT so a retry (say after a network drop) is not applied twice. Keys are kept for 24 hours.'}</td></tr>
+            <tr><th>{fa ? 'محدودیت درخواست' : 'Rate limits'}</th><td>{fa ? '۱۲۰ درخواست در دقیقه برای هر کلید. سقف و مانده در هدرهای X-RateLimit-Limit و X-RateLimit-Remaining می‌آید.' : '120 requests per minute per key. Limit and remainder come back in X-RateLimit-Limit and X-RateLimit-Remaining.'}</td></tr>
+            <tr><th>{fa ? 'مبلغ' : 'Money'}</th><td>{fa ? 'عدد صحیح به تومان، با currency برابر IRT.' : 'Whole numbers in Toman, with currency IRT.'}</td></tr>
+            <tr><th>{fa ? 'زمان' : 'Time'}</th><td>{fa ? 'زمان‌ها به وقت UTC و قالب ISO 8601 هستند. تاریخ‌های انقضای کالا شمسی (YYYY-MM-DD) می‌مانند، همان‌طور که روی بسته چاپ شده.' : 'Timestamps are UTC ISO 8601. Product expiry dates stay in the Persian calendar (YYYY-MM-DD), as printed on the pack.'}</td></tr>
+            <tr><th>{fa ? 'زبان' : 'Language'}</th><td>{fa ? 'با هدر Accept-Language: en پیام‌های خطا انگلیسی برمی‌گردند. نام کالاها همان‌طور که ثبت شده‌اند بازگردانده می‌شوند.' : 'Accept-Language: en returns error messages in English. Product names come back as entered.'}</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="errors" class="doc-sec">
+        <h2>{fa ? 'خطاها' : 'Errors'}</h2>
+        <p>{fa ? 'خطاها همیشه یک شکل دارند. request_id را هنگام تماس با پشتیبانی بفرستید.' : 'Errors always have the same shape. Quote request_id when contacting support.'}</p>
+        <pre class="code"><code set:html={highlight(errorBody)} /></pre>
+        <table>
+          <thead><tr><th>HTTP</th><th>code</th><th>{fa ? 'معنی' : 'Meaning'}</th></tr></thead>
+          <tbody>{ERRORS.map((e) => <tr><td class="ltr">{e.http}</td><td><code>{e.code}</code></td><td>{L(lang, e.d)}</td></tr>)}</tbody>
+        </table>
+      </section>
+
+      {GROUPS.map((g) => (
+        <section id={g.id} class="doc-sec">
+          <h2>{L(lang, g.title)}</h2>
+          <p>{L(lang, g.intro)}</p>
+          {g.endpoints.map((e) => (
+            <div class="ep" id={e.id}>
+              <h3>{L(lang, e.title)}</h3>
+              <div class="ep-line ltr"><em class={`m-${e.method.toLowerCase()}`}>{e.method}</em><code>{e.path}</code><span class="scope">{e.scope}</span></div>
+              <p>{L(lang, e.d)}</p>
+              {e.params && (
+                <table class="params">
+                  <thead><tr><th>{fa ? 'پارامتر' : 'Parameter'}</th><th>{fa ? 'نوع' : 'Type'}</th><th>{fa ? 'توضیح' : 'Description'}</th></tr></thead>
+                  <tbody>{e.params.map((p) => <tr><td><code>{p.name}</code>{p.req && <span class="req">{fa ? 'الزامی' : 'required'}</span>}</td><td class="ltr">{p.type}</td><td>{L(lang, p.d)}</td></tr>)}</tbody>
+                </table>
+              )}
+              <div class="ep-code">
+                {e.body && <div><span class="code-label">{fa ? 'بدنه‌ی درخواست' : 'Request body'}</span><pre class="code"><code set:html={highlight(e.body)} /></pre></div>}
+                <div><span class="code-label">{fa ? 'پاسخ' : 'Response'}</span><pre class="code"><code set:html={highlight(e.response)} /></pre></div>
+              </div>
+            </div>
+          ))}
+        </section>
+      ))}
+
+      <section id="webhooks" class="doc-sec">
+        <h2>{fa ? 'وبهوک‌ها' : 'Webhooks'}</h2>
+        <p>{fa ? 'به‌جای پرس‌وجوی مداوم، آدرسی از سیستم خودتان ثبت کنید تا نیلیکس رویدادها را همان لحظه به آن بفرستد.' : 'Instead of polling, register an endpoint on your system and nilix will post events to it as they happen.'}</p>
+        <pre class="code"><code set:html={highlight(registerHook)} /></pre>
+        <h3>{fa ? 'رویدادها' : 'Events'}</h3>
+        <table>
+          <tbody>{EVENTS.map((e) => <tr><td><code>{e.name}</code></td><td>{L(lang, e.d)}</td></tr>)}</tbody>
+        </table>
+        <h3>{fa ? 'نمونه‌ی ارسال' : 'Example delivery'}</h3>
+        <pre class="code"><code set:html={highlight(webhookPayload)} /></pre>
+        <h3>{fa ? 'بررسی امضا' : 'Verifying the signature'}</h3>
+        <p>{fa ? 'هر ارسال با کلید مخفی وبهوک شما امضا می‌شود (HMAC-SHA256 روی «زمان.بدنه»). ارسال‌هایی را که امضای درست ندارند یا بیش از پنج دقیقه قدیمی‌اند رد کنید.' : 'Each delivery is signed with your webhook secret (HMAC-SHA256 over "timestamp.body"). Reject anything with a bad signature or older than five minutes.'}</p>
+        <pre class="code"><code set:html={highlight(verify)} /></pre>
+        <h3>{fa ? 'تلاش دوباره' : 'Retries'}</h3>
+        <p>{fa ? 'اگر سیستم شما ظرف ۱۰ ثانیه کد 2xx برنگرداند، ارسال تا ۲۴ ساعت با فاصله‌ی رو به افزایش تکرار می‌شود. ممکن است یک رویداد دو بار برسد؛ با id رویداد تکراری‌ها را کنار بگذارید.' : 'If your system does not answer 2xx within 10 seconds, delivery is retried with growing gaps for 24 hours. An event can arrive twice; use its id to drop duplicates.'}</p>
+      </section>
+
+      <section id="changelog" class="doc-sec">
+        <h2>{fa ? 'تغییرات' : 'Changelog'}</h2>
+        <table>
+          <tbody>
+            <tr><td class="ltr">2026-11</td><td>{fa ? 'انتشار پیش‌نمایش v1: کالا، موجودی، سفارش، فاکتور، مشتری، فایل و وبهوک.' : 'v1 preview: products, inventory, orders, invoices, customers, files and webhooks.'}</td></tr>
+          </tbody>
+        </table>
+        <p>{fa ? 'سؤال یا نیاز به اتصال اختصاصی دارید؟ ' : 'Questions or need a custom connector? '}<a href={href(lang, '/contact?topic=api')}>{fa ? 'با تیم فنی در تماس باشید' : 'Talk to our team'}</a>.</p>
+      </section>
+    </article>
+  </div>
+</Base>
+
+<style>
+  .docs-hero { padding: 140px 0 60px; }
+  .dh-row { display: grid; grid-template-columns: 1.3fr 1fr; gap: 40px; align-items: end; margin-top: 10px; }
+  .dh-card { background: var(--card); border-radius: var(--radius); padding: 22px; display: grid; gap: 12px; box-shadow: inset 0 0 0 1px var(--line); }
+  .kv { display: flex; justify-content: space-between; gap: 12px; align-items: center; font-size: .9rem; flex-wrap: wrap; }
+  .kv span { color: var(--muted); }
+  .kv code { font-family: var(--mono); font-size: .82rem; }
+  @media (max-width: 900px) { .dh-row { grid-template-columns: 1fr; } }
+
+  .docs { display: grid; grid-template-columns: 250px 1fr; gap: 50px; padding-block: 50px 100px; }
+  .toc { position: sticky; top: 100px; align-self: start; max-height: calc(100vh - 120px); overflow: auto; font-size: .9rem; padding-inline-end: 8px; }
+  .toc nav { display: grid; gap: 6px; }
+  .toc a { text-decoration: none; color: var(--muted); display: block; padding: 4px 8px; border-radius: 8px; }
+  .toc a:hover { color: var(--fg); background: var(--card-2); }
+  .toc-l1 { font-weight: 800; color: var(--fg) !important; }
+  .toc-sub { display: grid; gap: 2px; margin-inline-start: 8px; }
+  .toc-sub a { display: flex; gap: 8px; align-items: center; font-size: .84rem; }
+  .toc em, .ep-line em { font-style: normal; font-family: var(--mono); font-size: .66rem; font-weight: 800; padding: 2px 6px; border-radius: 6px; flex: none; }
+  .m-get { background: rgba(16,185,129,.14); color: #059669; }
+  .m-post { background: rgba(56,189,248,.16); color: #0284c7; }
+  .m-put, .m-patch { background: rgba(245,158,11,.16); color: #b45309; }
+  .m-delete { background: rgba(244,63,94,.14); color: var(--rose); }
+  @media (max-width: 960px) { .docs { grid-template-columns: 1fr; } .toc { position: static; max-height: none; background: var(--card); border-radius: 18px; padding: 16px; } .toc-sub { display: none; } }
+
+  .doc-body { min-width: 0; font-size: 1.02rem; }
+  .doc-sec { padding-bottom: 40px; margin-bottom: 40px; border-bottom: 1px solid var(--line); }
+  .doc-sec > * + * { margin-top: 16px; }
+  .doc-sec h2 { font-size: 1.9rem; }
+  .doc-sec h3 { font-size: 1.2rem; margin-top: 28px; }
+  .doc-sec p, .doc-sec li { color: color-mix(in srgb, var(--fg) 82%, var(--bg)); }
+  .doc-sec ul, .doc-sec ol { padding-inline-start: 1.3em; }
+  .doc-sec a { color: var(--accent); }
+  .doc-sec table { width: 100%; border-collapse: collapse; font-size: .93rem; background: var(--card); border-radius: 14px; overflow: hidden; box-shadow: inset 0 0 0 1px var(--line); }
+  .doc-sec th, .doc-sec td { text-align: start; padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .doc-sec tr:last-child > * { border-bottom: 0; }
+  .doc-sec tbody th { width: 140px; font-weight: 800; }
+  .doc-sec td code, .doc-sec p code { font-family: var(--mono); font-size: .84em; background: var(--card-2); padding: 2px 6px; border-radius: 6px; direction: ltr; unicode-bidi: isolate; }
+  .note { display: flex; gap: 12px; padding: 16px 18px; border-radius: 16px; background: color-mix(in srgb, var(--gold) 30%, var(--card)); }
+  .note p { margin: 0; color: var(--fg); }
+  .note :global(svg) { flex: none; color: #b45309; margin-top: 4px; }
+  .ep { padding: 24px; margin-top: 22px; border-radius: 20px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); }
+  .ep > * + * { margin-top: 12px; }
+  .ep h3 { margin-top: 0; }
+  .ep .params { box-shadow: none; background: transparent; }
+  .ep-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-start; }
+  .ep-line code { font-family: var(--mono); font-weight: 700; font-size: .95rem; }
+  .scope { margin-inline-start: auto; font-family: var(--mono); font-size: .74rem; color: var(--muted); background: var(--card-2); padding: 3px 8px; border-radius: 99px; }
+  .req { font-size: .7rem; font-weight: 800; color: var(--rose); margin-inline-start: 6px; }
+  .ep-code { display: grid; gap: 12px; }
+  .code-label { display: block; font-size: .78rem; font-weight: 800; color: var(--muted); margin-bottom: 6px; }
+  .doc-sec .chips code { font-family: var(--mono); font-size: .78rem; }
+</style>

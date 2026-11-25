@@ -1,0 +1,86 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import Phone from '../components/Phone.astro';
+import Screen from '../components/Screen.astro';
+import Downloads from '../components/Downloads.astro';
+import { SITE } from '../data/site';
+import { type Lang, href, t } from '../i18n/ui';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const fa = lang === 'fa';
+const title = fa ? 'دانلود اپ نیلیکس برای اندروید و ورود به وب‌اپ' : 'Download the nilix app for Android or open the web app';
+const description = fa
+  ? 'نصب مستقیم اپ اندروید نیلیکس (APK)، نسخه‌های کافه‌بازار و مایکت، و استفاده از وب‌اپ روی آیفون و کامپیوتر در web.nilix.co.'
+  : 'Install the nilix Android app (APK), Cafe Bazaar and Myket listings, or use the web app on iPhone and desktop at web.nilix.co.';
+const app = {
+  '@context': 'https://schema.org',
+  '@type': 'MobileApplication',
+  name: fa ? 'نیلیکس' : 'nilix',
+  operatingSystem: 'Android',
+  applicationCategory: 'BusinessApplication',
+  downloadUrl: SITE.apk,
+  installUrl: SITE.apk,
+  inLanguage: ['fa', 'en'],
+  publisher: { '@id': `${SITE.url}/#org` },
+};
+---
+<Base lang={lang} title={title} description={description} path="/download" jsonLd={[app]}>
+  <section class="dl blend" data-scene="ink">
+    <div class="glow" style="inset-inline-start:-20vmax;top:-20vmax"></div>
+    <div class="wrap dl-grid">
+      <div>
+        <ol class="breadcrumb"><li><a href={href(lang, '/')}>{t(lang, 'home')}</a></li><li><span aria-current="page">{t(lang, 'download')}</span></li></ol>
+        <span class="eyebrow"><Icon name="download" size={16} />{t(lang, 'download')}</span>
+        <h1 class="display" style="margin-top:18px;font-size:clamp(2.4rem,6vw,5rem)" data-reveal>{fa ? 'نیلیکس روی گوشی شما' : 'nilix in your pocket'}</h1>
+        <p class="lead" style="margin-top:20px" data-reveal>{fa ? 'یک اپ برای فروشگاه، شرکت پخش و راننده. نقش شما هنگام ثبت‌نام مشخص می‌شود.' : 'One app for stores, distributors and drivers. You choose your role when you sign up.'}</p>
+        <div style="margin-top:34px"><Downloads lang={lang} /></div>
+      </div>
+      <div class="dl-phones" aria-hidden="true">
+        <Phone width={250} class="p1"><Screen kind="home" lang={lang} eager /></Phone>
+        <Phone width={230} class="p2"><Screen kind="product" lang={lang} /></Phone>
+      </div>
+    </div>
+  </section>
+
+  <section class="section blend" data-scene="paper">
+    <div class="wrap grid g3" data-stagger>
+      <div class="card">
+        <div class="icon-tile" style="--tile:#10b981"><Icon name="android" /></div>
+        <h2 class="h3">{fa ? 'نصب مستقیم روی اندروید' : 'Install directly on Android'}</h2>
+        <ol class="steps">
+          <li>{fa ? 'روی «دانلود مستقیم» بزنید تا فایل APK دریافت شود.' : 'Tap "Direct download" to get the APK.'}</li>
+          <li>{fa ? 'فایل را باز کنید؛ اگر گوشی پرسید، اجازه‌ی نصب از این منبع را بدهید.' : 'Open the file; if asked, allow installs from this source.'}</li>
+          <li>{fa ? 'اپ را باز کنید و با شماره موبایل وارد شوید.' : 'Open the app and sign in with your mobile number.'}</li>
+        </ol>
+      </div>
+      <div class="card">
+        <div class="icon-tile" style="--tile:#38bdf8"><Icon name="browser" /></div>
+        <h2 class="h3">{fa ? 'آیفون و کامپیوتر' : 'iPhone and desktop'}</h2>
+        <ol class="steps">
+          <li>{fa ? <>در مرورگر به <a href={SITE.webApp} class="ltr">web.nilix.co</a> بروید.</> : <>Open <a href={SITE.webApp}>web.nilix.co</a> in your browser.</>}</li>
+          <li>{fa ? 'در سافاری «اشتراک‌گذاری» و بعد «افزودن به صفحه‌ی اصلی» را بزنید.' : 'In Safari tap Share, then "Add to Home Screen".'}</li>
+          <li>{fa ? 'در کروم کامپیوتر از نوار آدرس گزینه‌ی «نصب» را انتخاب کنید.' : 'In desktop Chrome choose "Install" from the address bar.'}</li>
+        </ol>
+      </div>
+      <div class="card">
+        <div class="icon-tile" style="--tile:#f59e0b"><Icon name="bag" /></div>
+        <h2 class="h3">{fa ? 'کافه‌بازار و مایکت' : 'Cafe Bazaar and Myket'}</h2>
+        <p>{fa ? 'نسخه‌های فروشگاهی به‌زودی منتشر می‌شوند. تا آن زمان از نصب مستقیم استفاده کنید؛ بعداً به‌روزرسانی‌ها را از فروشگاه هم می‌توانید بگیرید.' : 'Store listings are coming soon. Until then use the direct install; you can switch to store updates later.'}</p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .dl { padding: 140px 0 90px; position: relative; overflow: hidden; }
+  .dl > .wrap { position: relative; z-index: 1; }
+  .dl-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; align-items: center; }
+  .dl-phones { position: relative; height: 560px; }
+  .dl-phones :global(.p1) { position: absolute; inset-inline-start: 0; top: 0; rotate: -5deg; z-index: 2; }
+  .dl-phones :global(.p2) { position: absolute; inset-inline-end: 0; top: 60px; rotate: 6deg; }
+  @media (max-width: 900px) { .dl-grid { grid-template-columns: 1fr; } .dl-phones { display: none; } }
+  .steps { margin: 14px 0 0; padding-inline-start: 1.2em; display: grid; gap: 8px; color: var(--muted); }
+  .steps a { color: var(--accent); }
+</style>

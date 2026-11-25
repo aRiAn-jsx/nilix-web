@@ -1,0 +1,129 @@
+---
+import { render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import Downloads from '../components/Downloads.astro';
+import { SITE } from '../data/site';
+import { type Post, posts, postPath, slugOf, counterpart, readingMinutes } from '../lib/blog';
+import { type Lang, formatDate, href, num, t } from '../i18n/ui';
+
+interface Props { post: Post }
+const { post } = Astro.props;
+const lang = post.data.lang as Lang;
+const fa = lang === 'fa';
+const { Content, headings } = await render(post);
+const other = await counterpart(post);
+const related = (await posts(lang)).filter((p) => p.id !== post.id && (p.data.category === post.data.category || p.data.tags.some((x) => post.data.tags.includes(x)))).slice(0, 3);
+const url = new URL(postPath(post), SITE.url).href;
+const toc = headings.filter((h) => h.depth === 2);
+
+const ld = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.data.title,
+    description: post.data.description,
+    datePublished: post.data.date.toISOString(),
+    dateModified: (post.data.updated ?? post.data.date).toISOString(),
+    inLanguage: fa ? 'fa-IR' : 'en',
+    mainEntityOfPage: url,
+    url,
+    image: `${SITE.url}/og.png`,
+    author: { '@type': 'Organization', name: post.data.author, url: SITE.url },
+    publisher: { '@id': `${SITE.url}/#org` },
+    keywords: post.data.tags.join(', '),
+    articleSection: post.data.category,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: t(lang, 'home'), item: new URL(href(lang, '/'), SITE.url).href },
+      { '@type': 'ListItem', position: 2, name: fa ? 'مقالات' : 'Blog', item: new URL(href(lang, '/blog'), SITE.url).href },
+      { '@type': 'ListItem', position: 3, name: post.data.title },
+    ],
+  },
+];
+---
+<Base lang={lang} title={post.data.title} description={post.data.description} path={`/blog/${slugOf(post)}`} type="article"
+  alternates={{ [lang]: postPath(post), [fa ? 'en' : 'fa']: other ? postPath(other) : null }}
+  published={post.data.date} modified={post.data.updated} jsonLd={ld} scene="paper">
+  <header class="post-hero" data-scene="ink">
+    <div class="glow" style="inset-inline-end:-25vmax;top:-30vmax"></div>
+    <div class="wrap narrow">
+      <ol class="breadcrumb">
+        <li><a href={href(lang, '/')}>{t(lang, 'home')}</a></li>
+        <li><a href={href(lang, '/blog')}>{fa ? 'مقالات' : 'Blog'}</a></li>
+        <li><span>{post.data.category}</span></li>
+      </ol>
+      <h1 class="display post-title">{post.data.title}</h1>
+      <p class="lead" style="margin-top:20px;max-width:60ch">{post.data.description}</p>
+      <div class="post-meta">
+        <span>{post.data.author}</span><span>·</span>
+        <time datetime={post.data.date.toISOString()}>{formatDate(lang, post.data.date)}</time><span>·</span>
+        <span>{num(lang, readingMinutes(post.body))} {t(lang, 'minutes')}</span>
+        {other && <><span>·</span><a href={postPath(other)} lang={other.data.lang}>{fa ? 'English version' : 'نسخه فارسی'}</a></>}
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap post-grid" data-scene="paper">
+    {toc.length > 2 && (
+      <aside class="post-toc">
+        <b>{fa ? 'در این مقاله' : 'In this article'}</b>
+        <nav>{toc.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}</nav>
+      </aside>
+    )}
+    <article class="prose">
+      <Content />
+      {post.data.tags.length > 0 && <div class="chips" style="margin-top:40px">{post.data.tags.map((x) => <span class="chip">#{x}</span>)}</div>}
+      <div class="post-cta">
+        <div>
+          <b class="h3">{fa ? 'این کارها را در نیلیکس انجام دهید' : 'Do this in nilix'}</b>
+          <p>{fa ? 'سفارش کارتنی، فاکتور رسمی و تحویل با QR در یک اپ.' : 'Carton ordering, official invoices and QR delivery in one app.'}</p>
+        </div>
+        <Downloads lang={lang} web />
+      </div>
+    </article>
+  </div>
+
+  {related.length > 0 && (
+    <section class="section" data-scene="paper" style="padding-top:0">
+      <div class="wrap">
+        <h2 class="h3" style="margin-bottom:18px">{fa ? 'مقاله‌های مرتبط' : 'Related articles'}</h2>
+        <div class="grid g3">
+          {related.map((p) => (
+            <a class="card rel" href={postPath(p)}>
+              <h3 class="h3">{p.data.title}</h3>
+              <p>{p.data.description}</p>
+              <span class="accent" style="display:inline-flex;gap:6px;align-items:center;font-weight:800;margin-top:auto">{t(lang, 'readMore')} <Icon name="arrow" size={16} class="flip" /></span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+</Base>
+
+<style>
+  .post-hero { padding: 140px 0 70px; position: relative; overflow: hidden; }
+  .post-hero .wrap { position: relative; z-index: 1; }
+  .narrow { max-width: 900px; }
+  .post-title { font-size: clamp(2rem, 4.6vw, 3.6rem); line-height: 1.35; }
+  html[lang='en'] .post-title { line-height: 1.12; }
+  .post-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; color: var(--muted); font-size: .92rem; }
+  .post-meta a { color: var(--accent); }
+  .post-grid { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 60px; padding-block: 60px 100px; justify-content: center; }
+  .post-grid:not(:has(.post-toc)) { grid-template-columns: minmax(0, 760px); }
+  .post-toc { position: sticky; top: 100px; align-self: start; display: grid; gap: 10px; font-size: .9rem; }
+  .post-toc nav { display: grid; gap: 4px; border-inline-start: 2px solid var(--line); }
+  .post-toc a { text-decoration: none; color: var(--muted); padding: 4px 12px; }
+  .post-toc a:hover { color: var(--fg); }
+  .post-cta { margin-top: 50px; padding: 28px; border-radius: var(--radius); background: var(--ink); color: #fff; display: grid; gap: 18px; }
+  .post-cta p { color: #98a1b3 !important; margin: 6px 0 0; }
+  .post-cta :global(.store) { background: rgba(255,255,255,.08); color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,.14); }
+  .post-cta :global(.store.primary) { background: var(--rose); }
+  .rel { text-decoration: none; display: flex; flex-direction: column; gap: 10px; }
+  .rel p { margin: 0; }
+  @media (max-width: 960px) { .post-grid { grid-template-columns: minmax(0, 1fr); } .post-toc { display: none; } }
+</style>

@@ -1,0 +1,37 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import Faq from '../components/Faq.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { FAQ } from '../data/faq';
+import { type Lang, L, href } from '../i18n/ui';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const fa = lang === 'fa';
+const title = fa ? 'سؤالات متداول نیلیکس' : 'nilix FAQ';
+const description = fa
+  ? 'پاسخ پرسش‌های رایج درباره‌ی نیلیکس: ثبت‌نام، پیش‌فاکتور و فاکتور رسمی، تحویل با QR، پرداخت، تعهدات صنفی، اتصال به حسابداری و خرید بین‌المللی.'
+  : 'Answers to common nilix questions: sign-up, pro-forma and official invoices, QR delivery, payment, trade commitments, accounting integration and international buying.';
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQ.flatMap((g) => g.items).map((f) => ({ '@type': 'Question', name: f.q[lang], acceptedAnswer: { '@type': 'Answer', text: f.a[lang] } })),
+};
+---
+<Base lang={lang} title={title} description={description} path="/faq" jsonLd={[ld]}>
+  <PageHero lang={lang} eyebrow={fa ? 'سؤالات متداول' : 'FAQ'} title={fa ? 'پرسش‌های شما، پاسخ‌های کوتاه' : 'Your questions, short answers'}
+    lead={fa ? 'جوابتان را پیدا نکردید؟ از صفحه‌ی تماس بپرسید.' : "Can't find yours? Ask us on the contact page."} crumbs={[[fa ? 'سؤالات متداول' : 'FAQ']]} />
+  <section class="section blend" data-scene="paper" style="padding-top:60px">
+    <div class="wrap" style="display:grid;gap:56px;max-width:900px">
+      {FAQ.map((g) => (
+        <div>
+          <h2 class="h3" style="margin-bottom:16px">{L(lang, g.title)}</h2>
+          <Faq lang={lang} items={g.items} />
+        </div>
+      ))}
+      <p class="muted">{fa ? 'سؤال دیگری دارید؟ ' : 'Another question? '}<a href={href(lang, '/contact')} class="accent">{fa ? 'با ما تماس بگیرید' : 'Get in touch'}</a></p>
+    </div>
+  </section>
+  <CtaBand lang={lang} />
+</Base>

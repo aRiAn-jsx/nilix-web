@@ -1,0 +1,140 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import PageHero from '../components/PageHero.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { SYSTEMS } from '../data/content';
+import { type Lang, L, href } from '../i18n/ui';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const fa = lang === 'fa';
+const title = fa ? 'اتصال نیلیکس به نرم‌افزار انبار، حسابداری و CRM' : 'Connect nilix to warehouse, accounting and CRM software';
+const description = fa
+  ? 'کالا، موجودی، سفارش، فاکتور و مشتری را بین نیلیکس و نرم‌افزار انبارداری، حسابداری و CRM جابه‌جا کنید؛ با اکسل و CSV، API یا وبهوک، در هر دو جهت.'
+  : 'Move products, stock, orders, invoices and customers between nilix and your warehouse, accounting and CRM software — via Excel and CSV, API or webhooks, in both directions.';
+
+const ways = [
+  {
+    icon: 'file', tone: '#10b981',
+    t: { fa: 'فایل اکسل و CSV', en: 'Excel & CSV files' },
+    tag: { fa: 'بدون برنامه‌نویسی', en: 'No code' },
+    d: { fa: 'خروجی نرم‌افزار فعلی‌تان را در قالب نیلیکس بریزید و یک‌جا بارگذاری کنید؛ یا گزارش‌ها را از نیلیکس به اکسل ببرید و در حسابداری وارد کنید.', en: 'Drop an export from your current software into the nilix template and upload it in one go — or take reports out to Excel and into your books.' },
+    pts: { fa: ['قالب آماده برای کالا، موجودی و مشتری', 'پیش‌نمایش و گزارش خطا قبل از ثبت', 'خروجی سفارش، فاکتور و دفاتر'], en: ['Ready templates for products, stock and customers', 'Preview and error report before anything is saved', 'Export orders, invoices and ledgers'] },
+  },
+  {
+    icon: 'code', tone: '#f43f5e',
+    t: { fa: 'REST API', en: 'REST API' },
+    tag: { fa: 'همگام‌سازی خودکار', en: 'Automatic sync' },
+    d: { fa: 'برنامه‌نویس شما یا شرکت نرم‌افزاری‌تان با کلید API داده را در هر دو جهت جابه‌جا می‌کند؛ مثلاً موجودی انبار هر ده دقیقه به نیلیکس برود و فاکتورها به حسابداری برگردند.', en: 'Your developer or software vendor moves data both ways with an API key — say, stock pushed to nilix every ten minutes and invoices flowing back to accounting.' },
+    pts: { fa: ['کلید جدا برای هر اتصال با دسترسی محدود', 'به‌روزرسانی گروهی تا ۵۰۰ ردیف', 'شناسه‌ی خارجی برای تطبیق با سیستم شما'], en: ['A separate, scoped key per connection', 'Bulk updates of up to 500 rows', 'External IDs to match your own records'] },
+  },
+  {
+    icon: 'webhook', tone: '#a78bfa',
+    t: { fa: 'وبهوک', en: 'Webhooks' },
+    tag: { fa: 'لحظه‌ای', en: 'Real time' },
+    d: { fa: 'به‌محض ثبت، تأیید یا تحویل سفارش، نیلیکس به آدرس سیستم شما خبر می‌دهد تا بدون پرس‌وجوی مداوم واکنش نشان دهد.', en: 'The moment an order is placed, confirmed or delivered, nilix calls your system so it can react without polling.' },
+    pts: { fa: ['امضای HMAC برای اطمینان از فرستنده', 'تلاش دوباره‌ی خودکار در صورت خطا', 'رویدادهای سفارش، فاکتور، موجودی و مشتری'], en: ['HMAC signatures to verify the sender', 'Automatic retries on failure', 'Order, invoice, stock and customer events'] },
+  },
+];
+
+const flows = [
+  { dir: 'in', t: { fa: 'از انبار به نیلیکس', en: 'Warehouse → nilix' }, d: { fa: 'کالای جدید، بارکد و موجودی هر انبار', en: 'New products, barcodes and stock per warehouse' } },
+  { dir: 'out', t: { fa: 'از نیلیکس به حسابداری', en: 'nilix → accounting' }, d: { fa: 'فاکتور فروش، دریافتی‌ها و طرف حساب‌ها', en: 'Sales invoices, receipts and accounts' } },
+  { dir: 'in', t: { fa: 'از CRM به نیلیکس', en: 'CRM → nilix' }, d: { fa: 'مشتریان، گروه‌بندی و سقف اعتبار', en: 'Customers, segments and credit limits' } },
+  { dir: 'out', t: { fa: 'از نیلیکس به CRM', en: 'nilix → CRM' }, d: { fa: 'سابقه‌ی خرید، امتیاز و مشتریان تازه', en: 'Purchase history, ratings and new customers' } },
+];
+---
+<Base lang={lang} title={title} description={description} path="/integrations">
+  <PageHero lang={lang} eyebrow={fa ? 'یکپارچه‌سازی' : 'Integrations'}
+    title={fa ? 'نیلیکس کنار نرم‌افزارهای فعلی شما' : 'nilix alongside the software you already use'}
+    lead={fa ? 'لازم نیست نرم‌افزار انبار یا حسابداری‌تان را کنار بگذارید. داده هم وارد نیلیکس می‌شود، هم از آن خارج.' : 'Keep your warehouse and accounting software. Data flows into nilix and back out again.'}
+    crumbs={[[fa ? 'یکپارچه‌سازی' : 'Integrations']]}>
+    <div class="hero-btns">
+      <a class="btn" href={href(lang, '/docs')}><Icon name="code" />{fa ? 'مستندات API' : 'API reference'}</a>
+      <a class="btn btn-ghost" href={href(lang, '/contact')}>{fa ? 'درخواست کلید API' : 'Request an API key'}</a>
+    </div>
+  </PageHero>
+
+  <section class="section blend" data-scene="paper">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">{fa ? 'با چه سیستم‌هایی' : 'Which systems'}</span>
+        <h2 class="h2" data-reveal>{fa ? 'چهار دسته، هر دو جهت' : 'Four kinds of system, both directions'}</h2>
+      </div>
+      <div class="grid g4" data-stagger>
+        {SYSTEMS.map((s) => (
+          <div class="card">
+            <div class="icon-tile"><Icon name={s.icon} /></div>
+            <h3 class="h3">{L(lang, s.name)}</h3>
+            <p>{L(lang, s.text)}</p>
+            <ul class="check-list">{L(lang, s.data).map((x) => <li>{x}</li>)}</ul>
+          </div>
+        ))}
+      </div>
+      <div class="flows" data-stagger>
+        {flows.map((f) => (
+          <div class="flow-row">
+            <span class:list={['dir', f.dir]}><Icon name="sync" size={18} />{f.dir === 'in' ? (fa ? 'ورود' : 'Import') : (fa ? 'خروج' : 'Export')}</span>
+            <b>{L(lang, f.t)}</b>
+            <span class="muted">{L(lang, f.d)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section blend" data-scene="ink">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">{fa ? 'سه راه اتصال' : 'Three ways to connect'}</span>
+        <h2 class="h2" data-reveal>{fa ? 'از یک فایل اکسل تا همگام‌سازی لحظه‌ای' : 'From one spreadsheet to real-time sync'}</h2>
+      </div>
+      <div class="grid g3" data-stagger>
+        {ways.map((w) => (
+          <div class="card" style={`--tile:${w.tone}`}>
+            <div class="icon-tile"><Icon name={w.icon} /></div>
+            <span class="chip" style="font-size:.76rem">{L(lang, w.tag)}</span>
+            <h3 class="h3" style="margin-top:10px">{L(lang, w.t)}</h3>
+            <p>{L(lang, w.d)}</p>
+            <ul class="check-list">{L(lang, w.pts).map((x) => <li>{x}</li>)}</ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section blend" data-scene="cream">
+    <div class="wrap steps-wrap">
+      <div class="section-head">
+        <span class="eyebrow">{fa ? 'شروع اتصال' : 'Getting connected'}</span>
+        <h2 class="h2" data-reveal>{fa ? 'چطور شروع کنیم؟' : 'How to start'}</h2>
+        <p class="lead">{fa ? 'اگر نرم‌افزار شما در فهرست نیست یا به اتصال اختصاصی نیاز دارید، با ما تماس بگیرید تا با شرکت نرم‌افزاری‌تان هماهنگ کنیم.' : 'If your software needs a custom connection, get in touch and we will work it out with your software vendor.'}</p>
+      </div>
+      <ol class="num-steps" data-stagger>
+        <li><b>{fa ? 'درخواست دسترسی' : 'Request access'}</b><span>{fa ? 'از فرم تماس یا پنل شرکت پخش کلید API بگیرید.' : 'Ask for an API key through the contact form or your distributor panel.'}</span></li>
+        <li><b>{fa ? 'محیط آزمایشی' : 'Sandbox'}</b><span>{fa ? 'اتصال را با داده‌ی آزمایشی امتحان کنید؛ هیچ سفارش واقعی ثبت نمی‌شود.' : 'Try the connection with test data; no real orders are created.'}</span></li>
+        <li><b>{fa ? 'نگاشت داده' : 'Map your data'}</b><span>{fa ? 'کد کالا، انبار و مشتری را با شناسه‌ی خارجی به سیستم خودتان گره بزنید.' : 'Tie product, warehouse and customer codes to your own system with external IDs.'}</span></li>
+        <li><b>{fa ? 'روشن کردن' : 'Go live'}</b><span>{fa ? 'کلید اصلی را فعال کنید و وبهوک‌ها را ثبت کنید.' : 'Switch to the live key and register your webhooks.'}</span></li>
+      </ol>
+    </div>
+  </section>
+  <CtaBand lang={lang} />
+</Base>
+
+<style>
+  .hero-btns { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+  .flows { display: grid; gap: 10px; margin-top: 40px; }
+  .flow-row { display: grid; grid-template-columns: auto 1fr 1.4fr; gap: 18px; align-items: center; background: var(--card); border-radius: 16px; padding: 16px 20px; box-shadow: inset 0 0 0 1px var(--line); }
+  .dir { display: inline-flex; gap: 6px; align-items: center; font-weight: 800; font-size: .85rem; padding: 6px 12px; border-radius: 99px; }
+  .dir.in { background: rgba(16,185,129,.14); color: #059669; }
+  .dir.out { background: rgba(244,63,94,.12); color: var(--rose); }
+  @media (max-width: 700px) { .flow-row { grid-template-columns: 1fr; gap: 6px; } .dir { justify-self: start; } }
+  .steps-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+  .num-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; counter-reset: s; }
+  .num-steps li { counter-increment: s; display: grid; gap: 4px; padding: 20px 22px; padding-inline-start: 74px; position: relative; background: var(--card); border-radius: 18px; box-shadow: inset 0 0 0 1px var(--line); }
+  .num-steps li::before { content: counter(s); position: absolute; inset-inline-start: 20px; top: 20px; width: 38px; height: 38px; border-radius: 12px; background: var(--rose); color: #fff; display: grid; place-items: center; font-weight: 900; }
+  html[lang='fa'] .num-steps li::before { content: counter(s, persian); }
+  .num-steps span { color: var(--muted); }
+  @media (max-width: 900px) { .steps-wrap { grid-template-columns: 1fr; } }
+</style>

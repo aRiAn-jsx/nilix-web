@@ -1,0 +1,14 @@
+---
+import type { QA } from '../data/faq';
+import type { Lang } from '../i18n/ui';
+interface Props { lang: Lang; items: QA[] }
+const { lang, items } = Astro.props;
+---
+<div class="faq">
+  {items.map((f, i) => (
+    <details open={i === 0}>
+      <summary>{f.q[lang]}</summary>
+      <p>{f.a[lang]}</p>
+    </details>
+  ))}
+</div>

@@ -1,0 +1,40 @@
+---
+import { SITE } from '../data/site';
+import { type Lang, href, t } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+  eyebrow: string;
+  title: string;
+  lead?: string;
+  /** Crumbs after "Home": [label, path?]. The last one is the current page. */
+  crumbs: [string, string?][];
+  scene?: string;
+}
+const { lang, eyebrow, title, lead, crumbs, scene = 'ink' } = Astro.props;
+const list = [[t(lang, 'home'), '/'] as [string, string?], ...crumbs];
+const breadcrumbLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: list.map(([name, p], i) => ({
+    '@type': 'ListItem', position: i + 1, name, ...(p ? { item: new URL(href(lang, p), SITE.url).href } : {}),
+  })),
+};
+---
+<section class="page-hero blend" data-scene={scene}>
+  <div class="glow" style="inset-inline-end:-25vmax;top:-30vmax"></div>
+  <div class="wrap">
+    <nav aria-label={lang === 'fa' ? 'مسیر صفحه' : 'Breadcrumb'}>
+      <ol class="breadcrumb">
+        {list.map(([label, p], i) => (
+          <li>{p && i < list.length - 1 ? <a href={href(lang, p)}>{label}</a> : <span aria-current="page">{label}</span>}</li>
+        ))}
+      </ol>
+    </nav>
+    <span class="eyebrow">{eyebrow}</span>
+    <h1 class="display" style="margin-top:20px" data-reveal>{title}</h1>
+    {lead && <p class="lead" data-reveal>{lead}</p>}
+    <slot />
+  </div>
+</section>
+<script type="application/ld+json" set:html={JSON.stringify(breadcrumbLd)} />

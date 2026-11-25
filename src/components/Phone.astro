@@ -1,0 +1,7 @@
+---
+interface Props { width?: number; class?: string; [key: string]: unknown }
+const { width = 300, class: cls, ...rest } = Astro.props;
+---
+<div class:list={['phone', cls]} style={`--w:${width}px`} {...rest}>
+  <div class="screen"><slot /></div>
+</div>

@@ -1,0 +1,234 @@
+---
+/**
+ * App screens for the phone frames, drawn in HTML from the app's own layout:
+ * sharp at any size, in the page's language, no demo data or test accounts on show.
+ */
+import Icon from './Icon.astro';
+import { type Lang, num } from '../i18n/ui';
+
+export type ScreenKind = 'home' | 'product' | 'cart' | 'vendor' | 'invoice' | 'driver' | 'delivered' | 'books' | 'admin';
+interface Props { kind: ScreenKind; lang: Lang; eager?: boolean }
+const { kind, lang } = Astro.props;
+const fa = lang === 'fa';
+const n = (v: number | string) => num(lang, v);
+const money = (v: number) => (fa ? `${n(v.toLocaleString('en-US'))}` : v.toLocaleString('en-US'));
+const T = fa ? 'تومان' : 'Toman';
+
+// flat product drawings
+const art = {
+  oil: '<rect x="34" y="8" width="20" height="12" rx="3" fill="#0b0b0e"/><path d="M28 22h32l6 14v50a8 8 0 0 1-8 8H30a8 8 0 0 1-8-8V36z" fill="#e8a317"/><rect x="22" y="48" width="44" height="22" fill="#d0051f"/><rect x="30" y="55" width="28" height="3" rx="1.5" fill="#fff"/><rect x="30" y="61" width="18" height="3" rx="1.5" fill="#fff"/>',
+  rice: '<path d="M20 22c8-6 40-6 48 0l6 60c0 8-60 8-60 0z" fill="#f3f0ec" stroke="#0b0b0e" stroke-width="2.5"/><path d="M26 18h36" stroke="#0b0b0e" stroke-width="5" stroke-linecap="round"/><rect x="28" y="44" width="32" height="20" rx="4" fill="#d0051f"/><circle cx="44" cy="54" r="5" fill="#fff"/>',
+  can: '<rect x="22" y="16" width="44" height="70" rx="8" fill="#aa181a"/><rect x="22" y="16" width="44" height="10" rx="5" fill="#0b0b0e"/><rect x="22" y="76" width="44" height="10" rx="5" fill="#0b0b0e"/><circle cx="44" cy="51" r="13" fill="#fff"/><circle cx="44" cy="51" r="6" fill="#d0051f"/>',
+  box: '<path d="M14 34l30-14 30 14v40L44 88 14 74z" fill="#c9a27a"/><path d="M14 34l30 14 30-14M44 48v40" stroke="#0b0b0e" stroke-width="2.5" fill="none"/><rect x="22" y="52" width="14" height="10" fill="#d0051f" transform="skewY(25) translate(0 -14)"/>',
+};
+
+// a fixed QR-like pattern (decorative)
+const cells: [number, number][] = [];
+let seed = 11;
+for (let y = 0; y < 21; y++)
+  for (let x = 0; x < 21; x++) {
+    if ((x < 7 && y < 7) || (x > 13 && y < 7) || (x < 7 && y > 13)) continue;
+    seed = (seed * 9301 + 49297) % 233280;
+    if (seed / 233280 > 0.5) cells.push([x, y]);
+  }
+const finders = [[0, 0], [14, 0], [0, 14]];
+const nav = (active: number) => [
+  { i: 'store', l: fa ? 'فروشگاه' : 'Store' },
+  { i: 'layers', l: fa ? 'دسته‌ها' : 'Browse' },
+  { i: 'cart', l: '', fab: true },
+  { i: 'invoice', l: fa ? 'سفارش‌ها' : 'Orders' },
+  { i: 'users', l: fa ? 'حساب' : 'Account' },
+].map((x, idx) => ({ ...x, on: idx === active }));
+---
+<div class:list={['mock', (kind === 'driver' || kind === 'admin') && 'dark']}>
+  <div class="m-sb" aria-hidden="true"><span class="ltr">9:41</span><span class="m-sb-r"><i></i><i></i><i></i><b></b></span></div>
+
+  {kind === 'home' && (<>
+    <div class="m-top">
+      <span class="m-logo"><img src="/favicon.svg" alt="" />{fa ? 'نیلیکس' : 'nilix'}</span>
+      <span style="display:flex;gap:6px"><span class="m-ico"><Icon name="bell" /></span><span class="m-ico"><Icon name="menu" /></span></span>
+    </div>
+    <div class="m-hero">
+      <div class="m-tag" style="background:rgba(255,255,255,.2);color:#fff;display:inline-block">{fa ? 'تحویل با QR' : 'QR delivery'}</div>
+      <div style="font-weight:900;font-size:13.5px;margin-top:6px;max-width:75%">{fa ? 'سفارش را تا دم مغازه دنبال کنید' : 'Follow every order to your door'}</div>
+      <div style="margin-top:8px;display:inline-block;background:#fff;color:#d0051f;border-radius:9px;padding:4px 10px;font-weight:800;font-size:9.5px">{fa ? 'شروع خرید' : 'Start shopping'}</div>
+    </div>
+    <div class="m-row"><span class="m-b">{fa ? 'دسته‌بندی کالا' : 'Categories'}</span><span class="m-mut">{fa ? 'همه' : 'All'}</span></div>
+    <div class="m-cats">
+      {[['layers', fa ? 'همه' : 'All', true], ['cart', fa ? 'سوپرمارکت' : 'Grocery'], ['pill', fa ? 'دارو' : 'Pharmacy'], ['phone', fa ? 'دیجیتال' : 'Digital']].map(([i, l, on]) => (
+        <span class:list={['m-cat', on && 'on']}><i><Icon name={i as string} /></i>{l}</span>
+      ))}
+    </div>
+    <div class="m-grid">
+      {([['oil', fa ? 'روغن ۲.۲ لیتری' : 'Oil 2.2 L', 2860000], ['rice', fa ? 'برنج ۱۰ کیلو' : 'Rice 10 kg', 9400000]] as const).map(([k, name, p]) => (
+        <div class="m-prod">
+          <div class="m-img"><svg viewBox="0 0 88 96" set:html={art[k]} /></div>
+          <div class="m-b" style="font-size:10px">{name}</div>
+          <div class="m-row"><span class="m-b" style="color:#d0051f;font-size:10px">{money(p)}</span><span class="m-mut">{T}</span></div>
+        </div>
+      ))}
+    </div>
+    <div class="m-nav">{nav(0).map((x) => x.fab ? <span class="m-fab"><Icon name={x.i} /></span> : <span>{x.on ? <b><Icon name={x.i} /></b> : <Icon name={x.i} />}{x.on ? <b>{x.l}</b> : x.l}</span>)}</div>
+  </>)}
+
+  {kind === 'product' && (<>
+    <div class="m-top"><span class="m-ico"><Icon name="arrow" class="flip-back" /></span><span class="m-b">{fa ? 'جزئیات کالا' : 'Product'}</span><span class="m-ico"><Icon name="star" /></span></div>
+    <div class="m-img" style="aspect-ratio:1.15;background:#fff;box-shadow:0 0 0 1px var(--m-line);border-radius:18px;position:relative">
+      <svg viewBox="0 0 88 96" style="width:48%;height:auto" set:html={art.oil} />
+      <span class="m-tag t-ok" style="position:absolute;top:8px;inset-inline-start:8px">{fa ? 'موجود در انبار' : 'In stock'}</span>
+    </div>
+    <div>
+      <span class="m-tag t-red">{fa ? 'سوپرمارکت' : 'Grocery'}</span>
+      <div class="m-b" style="font-size:14px;margin-top:5px">{fa ? 'روغن سرخ‌کردنی ۲.۲ لیتری' : 'Frying oil, 2.2 L'}</div>
+      <div class="m-mut ltr" style="text-align:start">{n('6264591596821')}</div>
+    </div>
+    <div class="m-card m-row">
+      <span style="display:flex;gap:7px;align-items:center"><span class="m-ico" style="background:#0b0b0e;color:#fff"><Icon name="building" /></span><span><span class="m-b">{fa ? 'پخش ایلیا' : 'Ilia Distribution'}</span><br /><span class="m-mut">★ {n('4.8')}</span></span></span>
+      <span class="m-tag t-ink">{fa ? 'فروشگاه' : 'Store'}</span>
+    </div>
+    <div class="m-grid">
+      <div class="m-card"><div class="m-mut">{fa ? 'در هر کارتن' : 'Per carton'}</div><div class="m-b">{fa ? `${n(6)} عدد` : '6 units'}</div></div>
+      <div class="m-card"><div class="m-mut">{fa ? 'حداقل سفارش' : 'Minimum'}</div><div class="m-b">{fa ? `${n(2)} کارتن` : '2 cartons'}</div></div>
+    </div>
+    <div class="m-card m-row"><span><span class="m-mut">{fa ? 'قیمت هر کارتن' : 'Per carton'}</span><br /><span class="m-big" style="font-size:15px">{money(2860000)}</span> <span class="m-mut">{T}</span></span>
+      <span class="m-step" style="width:86px"><span>−</span><span>{n(4)}</span><span style="color:#d0051f">+</span></span></div>
+    <div class="m-btn" style="margin-top:auto">{fa ? 'افزودن به سبد' : 'Add to cart'}</div>
+  </>)}
+
+  {kind === 'cart' && (<>
+    <div class="m-top"><span class="m-title">{fa ? 'سبد خرید' : 'Cart'}</span><span class="m-pill">{fa ? `${n(3)} کالا` : '3 items'}</span></div>
+    {([['oil', fa ? 'روغن ۲.۲ لیتری' : 'Oil 2.2 L', 4, 2860000], ['rice', fa ? 'برنج ۱۰ کیلو' : 'Rice 10 kg', 2, 9400000], ['can', fa ? 'رب گوجه ۸۰۰ گرم' : 'Tomato paste', 6, 1720000]] as const).map(([k, name, q, p]) => (
+      <div class="m-card m-row" style="padding:7px">
+        <span style="display:flex;gap:8px;align-items:center">
+          <span class="m-img" style="width:42px;flex:none"><svg viewBox="0 0 88 96" set:html={art[k]} /></span>
+          <span><span class="m-b">{name}</span><br /><span class="m-mut">{money(p)} {T}</span></span>
+        </span>
+        <span class="m-step" style="width:70px"><span>−</span><span>{n(q)}</span><span style="color:#d0051f">+</span></span>
+      </div>
+    ))}
+    <div class="m-card" style="display:grid;gap:4px">
+      <div class="m-row m-mut"><span>{fa ? 'تخفیف پلکانی' : 'Tier discount'}</span><span class="m-tag t-ok">−{n(5)}٪</span></div>
+      <div class="m-row m-mut"><span>{fa ? 'ارزش افزوده' : 'VAT'}</span><span>{n(10)}٪</span></div>
+      <div class="m-row" style="border-top:1px dashed var(--m-line);padding-top:6px"><span class="m-b">{fa ? 'قابل پرداخت' : 'Payable'}</span><span><span class="m-big" style="font-size:15px">{money(41720000)}</span> <span class="m-mut">{T}</span></span></div>
+    </div>
+    <div class="m-btn">{fa ? 'ثبت پیش‌فاکتور' : 'Submit pro-forma'}</div>
+    <div class="m-nav">{nav(2).map((x) => x.fab ? <span class="m-fab" style="background:#d0051f"><Icon name={x.i} /></span> : <span><Icon name={x.i} />{x.l}</span>)}</div>
+  </>)}
+
+  {kind === 'vendor' && (<>
+    <div class="m-top"><span class="m-title">{fa ? 'سفارش‌های امروز' : "Today's orders"}</span><span class="m-pill">{fa ? 'پنل پخش' : 'Distributor'}</span></div>
+    <div class="m-grid">
+      <div class="m-card" style="background:#0b0b0e;color:#fff"><div class="m-mut">{fa ? 'پیش‌فاکتور جدید' : 'New'}</div><div class="m-big">{n(12)}</div></div>
+      <div class="m-card"><div class="m-mut">{fa ? 'بسته‌بندی' : 'Packing'}</div><div class="m-big">{n(7)}</div></div>
+    </div>
+    {[
+      [fa ? 'سوپرمارکت آفتاب' : 'Aftab Supermarket', fa ? 'مشهد · ۶ کالا' : 'Mashhad · 6 items', 't-red', fa ? 'بررسی' : 'Review'],
+      [fa ? 'هایپر نگین' : 'Negin Hyper', fa ? 'مشهد · ۱۴ کالا' : 'Mashhad · 14 items', 't-warn', fa ? 'بسته‌بندی' : 'Packing'],
+      [fa ? 'فروشگاه بهار' : 'Bahar Store', fa ? 'نیشابور · ۴ کالا' : 'Neyshabur · 4 items', 't-ink', fa ? 'در مسیر' : 'In transit'],
+      [fa ? 'مینی‌مارکت امید' : 'Omid Mini-mart', fa ? 'مشهد · ۹ کالا' : 'Mashhad · 9 items', 't-ok', fa ? 'تحویل شد' : 'Delivered'],
+    ].map(([a, b, tone, s]) => (
+      <div class="m-card m-row"><span><span class="m-b">{a}</span><br /><span class="m-mut">{b}</span></span><span class={`m-tag ${tone}`}>{s}</span></div>
+    ))}
+    <div class="m-card">
+      <div class="m-row"><span class="m-b">{fa ? 'تأیید تعداد' : 'Confirm quantity'}</span><span class="m-mut">{fa ? 'برنج ۱۰ کیلو' : 'Rice 10 kg'}</span></div>
+      <div class="m-row" style="margin-top:6px"><span class="m-mut">{fa ? `درخواست: ${n(5)} کارتن` : 'Requested: 5'}</span><span class="m-step" style="width:74px"><span>−</span><span>{n(4)}</span><span style="color:#d0051f">+</span></span></div>
+    </div>
+    <div class="m-btn" style="margin-top:auto">{fa ? 'صدور فاکتور رسمی' : 'Issue official invoice'}</div>
+  </>)}
+
+  {kind === 'invoice' && (<>
+    <div class="m-top"><span class="m-title">{fa ? 'فاکتور رسمی' : 'Official invoice'}</span><span class="m-tag t-ink ltr">#{n(10428)}</span></div>
+    <div class="m-card" style="display:grid;gap:3px">
+      <div class="m-row"><span class="m-mut">{fa ? 'فروشنده' : 'Seller'}</span><span class="m-b">{fa ? 'پخش ایلیا' : 'Ilia Distribution'}</span></div>
+      <div class="m-row"><span class="m-mut">{fa ? 'خریدار' : 'Buyer'}</span><span class="m-b">{fa ? 'سوپرمارکت آفتاب' : 'Aftab Supermarket'}</span></div>
+    </div>
+    <div class="m-card" style="display:grid;gap:5px">
+      {[[fa ? 'روغن ۲.۲ لیتری' : 'Oil 2.2 L', 4], [fa ? 'برنج ۱۰ کیلو' : 'Rice 10 kg', 4], [fa ? 'رب گوجه' : 'Tomato paste', 6]].map(([a, b]) => (
+        <div class="m-row"><span>{a}</span><span class="m-mut">{fa ? `${n(b as number)} کارتن` : `${b} ctn`}</span></div>
+      ))}
+      <div class="m-row" style="border-top:1px dashed var(--m-line);padding-top:6px"><span class="m-b">{fa ? 'جمع با ارزش افزوده' : 'Total incl. VAT'}</span><span class="m-b" style="color:#d0051f">{money(39480000)}</span></div>
+    </div>
+    <div class="m-card m-row" style="align-items:center">
+      <div class="m-qr"><svg viewBox="0 0 21 21" shape-rendering="crispEdges">
+        {finders.map(([x, y]) => <g><rect x={x} y={y} width="7" height="7" fill="#0b0b0e" /><rect x={x + 1} y={y + 1} width="5" height="5" fill="#fff" /><rect x={x + 2} y={y + 2} width="3" height="3" fill="#d0051f" /></g>)}
+        {cells.map(([x, y]) => <rect x={x} y={y} width="1" height="1" fill="#0b0b0e" />)}
+      </svg></div>
+      <div style="flex:1;padding-inline-start:10px"><div class="m-b">{fa ? 'QR تحویل' : 'Delivery QR'}</div><div class="m-mut">{fa ? 'هر ردیف کالا کد خودش را دارد و هنگام تحویل اسکن می‌شود.' : 'Each line has its own code, scanned on delivery.'}</div></div>
+    </div>
+    <div class="m-btn alt" style="margin-top:auto">{fa ? 'دانلود PDF' : 'Download PDF'}</div>
+  </>)}
+
+  {kind === 'driver' && (<>
+    <div class="m-top"><span class="m-title">{fa ? 'مسیر امروز' : "Today's route"}</span><span class="m-pill">{fa ? 'راننده' : 'Driver'}</span></div>
+    <div class="m-map" style="background:#141418">
+      <svg viewBox="0 0 260 120" fill="none">
+        <path d="M0 30h260M0 70h260M0 100h260M60 0v120M140 0v120M210 0v120" stroke="#1f1f26" stroke-width="6" />
+        <path d="M24 98 L60 98 L60 70 L140 70 L140 30 L236 30" stroke="#d0051f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+        <circle cx="24" cy="98" r="6" fill="#f5f3f1" /><circle cx="140" cy="70" r="6" fill="#f5f3f1" /><circle cx="236" cy="30" r="8" fill="#d0051f" /><circle cx="236" cy="30" r="3" fill="#fff" />
+      </svg>
+    </div>
+    <div class="m-card">
+      <div class="m-row"><span class="m-b">{fa ? 'بار شماره ۳' : 'Load #3'}</span><span class="m-tag t-ink">{fa ? `${n(14)} کارتن` : '14 cartons'}</span></div>
+      <div class="m-bar" style="margin-top:8px"><i style="width:62%"></i></div>
+      <div class="m-row m-mut" style="margin-top:4px"><span>{fa ? `${n(2)} از ${n(3)} مقصد` : '2 of 3 stops'}</span><span>{fa ? '۱۸ دقیقه' : '18 min'}</span></div>
+    </div>
+    <div class="m-card m-row"><span><span class="m-b">{fa ? 'سوپرمارکت آفتاب' : 'Aftab Supermarket'}</span><br /><span class="m-mut">{fa ? `${n(6)} کارتن · ۲.۴ کیلومتر` : '6 cartons · 2.4 km'}</span></span><span class="m-tag t-red">{fa ? 'بعدی' : 'Next'}</span></div>
+    <div class="m-card m-row"><span><span class="m-b">{fa ? 'هایپر نگین' : 'Negin Hyper'}</span><br /><span class="m-mut">{fa ? `${n(8)} کارتن` : '8 cartons'}</span></span><span class="m-tag t-ink">{fa ? 'در صف' : 'Queued'}</span></div>
+    <div class="m-btn" style="margin-top:auto;display:flex;gap:6px;justify-content:center;align-items:center"><Icon name="scan" size={14} />{fa ? 'اسکن QR تحویل' : 'Scan delivery QR'}</div>
+  </>)}
+
+  {kind === 'delivered' && (<>
+    <div class="m-top"><span class="m-title">{fa ? 'تحویل' : 'Delivery'}</span><span class="m-tag t-ok">{fa ? 'تأیید شد' : 'Confirmed'}</span></div>
+    <div class="m-card" style="display:grid;justify-items:center;gap:6px;padding:16px 10px;text-align:center">
+      <div style="width:64px;height:64px;border-radius:50%;background:#d0051f;display:grid;place-items:center">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+      </div>
+      <div class="m-big" style="font-size:15px">{fa ? 'تحویل ثبت شد' : 'Handover recorded'}</div>
+      <div class="m-mut">{fa ? `QR اسکن شد · ${n(14)} کارتن مطابق فاکتور` : 'QR scanned · 14 cartons match the invoice'}</div>
+      <div class="m-otp" style="margin-top:6px">{['4', '8', '1', '9', '0', '6'].map((d) => <span>{n(d)}</span>)}</div>
+      <div class="m-mut">{fa ? 'کد تحویل یک‌بار مصرف' : 'One-time delivery code'}</div>
+    </div>
+    <div class="m-card m-row"><span class="m-b">{fa ? 'امتیاز به فروشنده' : 'Rate the seller'}</span><span style="color:#d0051f;letter-spacing:2px;font-size:13px">★★★★★</span></div>
+    <div class="m-card m-row"><span class="m-mut">{fa ? 'روش پرداخت' : 'Payment'}</span><span class="m-b">{fa ? 'کارتخوان' : 'Card terminal'}</span></div>
+    <div class="m-btn" style="margin-top:auto">{fa ? 'پرداخت و پایان' : 'Pay and finish'}</div>
+  </>)}
+
+  {kind === 'books' && (<>
+    <div class="m-top"><span class="m-title">{fa ? 'حسابداری' : 'Accounting'}</span><span class="m-tag t-ink">{fa ? 'آبان' : 'This month'}</span></div>
+    <div class="m-card" style="background:#0b0b0e;color:#fff">
+      <div class="m-mut">{fa ? 'فروش خالص' : 'Net sales'}</div>
+      <div class="m-big">{money(1284600000)} <span class="m-mut" style="font-size:9px">{T}</span></div>
+      <div class="m-chart" style="margin-top:8px">{[38, 52, 44, 70, 58, 84, 76, 92].map((h, i) => <i class:list={[i === 7 && 'on']} style={`height:${h}%;${i !== 7 ? 'background:#26262d' : ''}`}></i>)}</div>
+    </div>
+    <div class="m-grid">
+      <div class="m-card"><div class="m-mut">{fa ? 'مطالبات' : 'Receivables'}</div><div class="m-b">{money(186000000)}</div></div>
+      <div class="m-card"><div class="m-mut">{fa ? 'هزینه‌ها' : 'Expenses'}</div><div class="m-b">{money(94300000)}</div></div>
+    </div>
+    {[[fa ? 'تسویه سفارش ۱۰۴۲۸' : 'Order 10428 settled', '+۱۲٬۵۸۴٬۰۰۰', 't-ok'], [fa ? 'سوخت ناوگان' : 'Fleet fuel', '−۲٬۱۰۰٬۰۰۰', 't-red'], [fa ? 'تسویه سفارش ۱۰۴۲۱' : 'Order 10421 settled', '+۸٬۹۰۰٬۰۰۰', 't-ok']].map(([a, s, tone]) => (
+      <div class="m-card m-row"><span>{a}</span><span class={`m-tag ${tone} ltr`}>{fa ? s : s.replace(/[۰-۹٬]/g, (c) => (c === '٬' ? ',' : String('۰۱۲۳۴۵۶۷۸۹'.indexOf(c))))}</span></div>
+    ))}
+    <div class="m-btn alt" style="margin-top:auto">{fa ? 'خروجی اکسل' : 'Export to Excel'}</div>
+  </>)}
+
+  {kind === 'admin' && (<>
+    <div class="m-top"><span class="m-title">{fa ? 'مدیریت سامانه' : 'Platform admin'}</span><span class="m-pill">{fa ? 'مدیر' : 'Admin'}</span></div>
+    <div class="m-grid">
+      <div class="m-card" style="background:#d0051f;color:#fff;box-shadow:none"><div style="opacity:.8;font-size:9.5px">{fa ? 'درخواست عضویت' : 'Sign-ups'}</div><div class="m-big">{n(9)}</div></div>
+      <div class="m-card"><div class="m-mut">{fa ? 'سفارش فعال' : 'Active orders'}</div><div class="m-big">{n(146)}</div></div>
+    </div>
+    {[[fa ? 'پخش سامانیان' : 'Samanian Dist.', fa ? 'تعهدات صنفی تأیید شد' : 'Commitments verified', 't-ok', fa ? 'تأیید' : 'OK'], [fa ? 'داروخانه شفا' : 'Shafa Pharmacy', fa ? 'بررسی کد IRC' : 'IRC under review', 't-warn', fa ? 'بررسی' : 'Review'], [fa ? 'راننده: ر. احمدی' : 'Driver: R. Ahmadi', fa ? 'مدارک کامل' : 'Documents complete', 't-ink', fa ? 'باز' : 'Open']].map(([a, b, tone, s]) => (
+      <div class="m-card m-row"><span><span class="m-b">{a}</span><br /><span class="m-mut">{b}</span></span><span class={`m-tag ${tone}`}>{s}</span></div>
+    ))}
+    <div class="m-card"><div class="m-row"><span class="m-mut">{fa ? 'سلامت سامانه' : 'System health'}</span><span class="m-tag t-ok">{fa ? 'پایدار' : 'Stable'}</span></div><div class="m-bar" style="margin-top:8px"><i style="width:96%"></i></div></div>
+  </>)}
+</div>
+
+<style is:global>
+  .mock .m-sb { position: absolute; inset: 0 0 auto; height: 40px; padding: 14px 22px 0; display: flex; justify-content: space-between; font-size: 10px; font-weight: 800; width: auto !important; }
+  .mock .m-sb-r { display: flex; gap: 2px; align-items: flex-end; }
+  .mock .m-sb-r i { width: 3px; border-radius: 1px; background: currentColor; }
+  .mock .m-sb-r i:nth-child(1) { height: 4px; } .mock .m-sb-r i:nth-child(2) { height: 6px; } .mock .m-sb-r i:nth-child(3) { height: 8px; }
+  .mock .m-sb-r b { width: 18px; height: 9px; border-radius: 3px; box-shadow: inset 0 0 0 1.5px currentColor; margin-inline-start: 4px; position: relative; }
+  .mock .m-sb-r b::after { content: ''; position: absolute; inset: 2px 5px 2px 2px; background: currentColor; border-radius: 1px; }
+  html[dir='ltr'] .mock .flip-back { scale: -1 1; }
+</style>

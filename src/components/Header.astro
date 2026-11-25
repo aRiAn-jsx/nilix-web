@@ -1,0 +1,66 @@
+---
+import Icon from './Icon.astro';
+import { SITE } from '../data/site';
+import { type Lang, NAV, href, t, otherLang } from '../i18n/ui';
+
+interface Props { lang: Lang; path: string; alt: Record<Lang, string | null> }
+const { lang, path, alt } = Astro.props;
+const other = otherLang(lang);
+const switchTo = alt[other] ?? href(other, '/');
+const active = (p: string) => path === p || (p !== '/' && path.startsWith(p + '/'));
+---
+<header class="hdr" id="hdr">
+  <div class="wrap hdr-row">
+    <a class="logo" href={href(lang, '/')} aria-label={lang === 'fa' ? 'نیلیکس، صفحه‌ی اصلی' : 'nilix home'}>
+      <img src="/favicon.svg" alt="" width="40" height="40" />
+      <span>{lang === 'fa' ? 'نیلیکس' : 'nilix'}</span>
+    </a>
+    <nav class="hdr-pill glass" aria-label={lang === 'fa' ? 'منوی اصلی' : 'Main'}>
+      {NAV.map((n) => (
+        <a href={href(lang, n.path)} aria-current={active(n.path) ? 'page' : undefined}>{n[lang]}</a>
+      ))}
+    </nav>
+    <div class="hdr-end">
+      <a class="lang glass hide-m" href={switchTo} hreflang={other} lang={other} aria-label={t(lang, 'langSwitchLabel')}>{lang === 'fa' ? 'EN' : 'فا'}</a>
+      <a class="hdr-cta" href={SITE.webApp} rel="noopener"><span>{t(lang, 'openApp')}</span><i><Icon name="arrow" /></i></a>
+      <button class="burger glass" type="button" aria-label={t(lang, 'menu')} aria-expanded="false" aria-controls="drawer" data-drawer-open>
+        <Icon name="menu" />
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label={t(lang, 'menu')}>
+  <div class="drawer-top">
+    <a class="logo" style="color:#fff" href={href(lang, '/')}><img src="/favicon.svg" alt="" width="40" height="40" /><span>{lang === 'fa' ? 'نیلیکس' : 'nilix'}</span></a>
+    <button class="burger" style="display:grid;background:rgba(255,255,255,.1);color:#fff" type="button" aria-label={t(lang, 'close')} data-drawer-close>
+      <Icon name="x" />
+    </button>
+  </div>
+  {NAV.map((n) => <a class="big" href={href(lang, n.path)}>{n[lang]}</a>)}
+  <a class="big" href={href(lang, '/about')}>{lang === 'fa' ? 'درباره ما' : 'About'}</a>
+  <a class="big" href={href(lang, '/contact')}>{lang === 'fa' ? 'تماس با ما' : 'Contact'}</a>
+  <a class="big" href={switchTo} hreflang={other} lang={other}>{t(lang, 'langSwitch')}</a>
+  <a class="btn" href={href(lang, '/download')}><Icon name="download" />{t(lang, 'download')}</a>
+</div>
+
+<script>
+  const hdr = document.getElementById('hdr')!;
+  const onScroll = () => hdr.classList.toggle('scrolled', scrollY > 30);
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  const drawer = document.getElementById('drawer')!;
+  const opener = document.querySelector<HTMLButtonElement>('[data-drawer-open]')!;
+  const setOpen = (open: boolean) => {
+    drawer.classList.toggle('open', open);
+    opener.setAttribute('aria-expanded', String(open));
+    document.documentElement.style.overflow = open ? 'hidden' : '';
+    if (open) drawer.querySelector<HTMLElement>('[data-drawer-close]')?.focus();
+    else opener.focus();
+  };
+  opener.addEventListener('click', () => setOpen(true));
+  drawer.querySelector('[data-drawer-close]')?.addEventListener('click', () => setOpen(false));
+  drawer.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && drawer.classList.contains('open')) setOpen(false); });
+</script>

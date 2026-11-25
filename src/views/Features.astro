@@ -1,0 +1,85 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import Phone from '../components/Phone.astro';
+import Screen from '../components/Screen.astro';
+import PageHero from '../components/PageHero.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { ROLES } from '../data/content';
+import { type Lang, L } from '../i18n/ui';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const fa = lang === 'fa';
+const title = fa ? 'قابلیت‌های نیلیکس برای فروشگاه، شرکت پخش، راننده و مدیر' : 'nilix features for stores, distributors, drivers and admins';
+const description = fa
+  ? 'همه‌ی قابلیت‌های پنل‌های نیلیکس: سفارش کارتنی و ردیابی برای فروشگاه، برد سفارش، انبار، تعهدات صنفی، ناوگان و حسابداری برای شرکت پخش، بارنامه و تحویل QR برای راننده.'
+  : 'Every nilix panel feature: carton ordering and tracking for stores; order board, inventory, trade commitments, fleet and accounting for distributors; manifests and QR delivery for drivers.';
+const scenes = ['paper', 'ink', 'cream', 'night'];
+
+const common = [
+  { icon: 'globe', t: { fa: 'دو زبانه', en: 'Bilingual' }, d: { fa: 'کل اپ و همه‌ی پنل‌ها به فارسی و انگلیسی', en: 'The whole app and every panel in Persian and English' } },
+  { icon: 'browser', t: { fa: 'اندروید و وب', en: 'Android & web' }, d: { fa: 'اپ نصبی اندروید و وب‌اپ قابل نصب روی هر گوشی و کامپیوتر', en: 'An Android app plus an installable web app for any phone or computer' } },
+  { icon: 'bell', t: { fa: 'اعلان و پیامک', en: 'Notifications & SMS' }, d: { fa: 'هر تغییر وضعیت سفارش، لحظه‌ای به طرف‌های معامله خبر داده می‌شود', en: 'Every order status change reaches both sides in real time' } },
+  { icon: 'lock', t: { fa: 'ورود با کد یک‌بار مصرف', en: 'One-time-code sign-in' }, d: { fa: 'بدون رمز عبور؛ ورود با کد تأیید پیامکی', en: 'No passwords; sign in with an SMS code' } },
+  { icon: 'sync', t: { fa: 'همگام‌سازی زنده', en: 'Live sync' }, d: { fa: 'موجودی، قیمت و سفارش‌ها بدون نیاز به بازخوانی صفحه به‌روز می‌شوند', en: 'Stock, prices and orders update without reloading' } },
+  { icon: 'plug', t: { fa: 'API و اکسل', en: 'API & Excel' }, d: { fa: 'ورود و خروج داده با نرم‌افزار انبار، حسابداری و CRM', en: 'Move data in and out of warehouse, accounting and CRM tools' } },
+];
+---
+<Base lang={lang} title={title} description={description} path="/features">
+  <PageHero lang={lang} eyebrow={fa ? 'قابلیت‌ها' : 'Features'}
+    title={fa ? 'هر نقش، پنل خودش' : 'Every role, its own panel'}
+    lead={fa ? 'نیلیکس برای هر حلقه‌ی زنجیره‌ی پخش ابزار جدا دارد؛ همه روی یک سفارش مشترک کار می‌کنند.' : 'nilix gives every link in the distribution chain its own tools, all working on the same order.'}
+    crumbs={[[fa ? 'قابلیت‌ها' : 'Features']]}>
+    <div class="chips" style="margin-top:30px">
+      {ROLES.map((r) => <a class="chip" style="text-decoration:none" href={`#${r.id}`}>{L(lang, r.name)}</a>)}
+    </div>
+  </PageHero>
+
+  {ROLES.map((r, i) => (
+    <section class="section blend role-sec" data-scene={scenes[i % scenes.length]} id={r.id}>
+      <div class="wrap role-grid" style={`--tile:${r.color}`}>
+        <div class="role-phone" data-reveal="scale"><Phone width={280}><Screen kind={r.screen} lang={lang} /></Phone></div>
+        <div>
+          <div class="icon-tile"><Icon name={r.icon} /></div>
+          <h2 class="h2">{L(lang, r.name)}</h2>
+          <p class="lead" style="margin-top:14px">{L(lang, r.pitch)}</p>
+          <p class="muted" style="margin-top:8px;font-size:.95rem">{L(lang, r.who)}</p>
+          <div class="grid g2 feats" data-stagger>
+            {r.features.map((f) => (
+              <div class="feat">
+                <span class="feat-ic"><Icon name={f.icon} size={20} /></span>
+                <div><h3>{L(lang, f.title)}</h3><p>{L(lang, f.text)}</p></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  ))}
+
+  <section class="section blend" data-scene="paper">
+    <div class="wrap">
+      <div class="section-head center">
+        <span class="eyebrow">{fa ? 'در همه‌ی پنل‌ها' : 'In every panel'}</span>
+        <h2 class="h2" data-reveal>{fa ? 'پایه‌هایی که همه دارند' : 'What everyone gets'}</h2>
+      </div>
+      <div class="grid g3" data-stagger>
+        {common.map((c) => <div class="card"><div class="icon-tile"><Icon name={c.icon} /></div><h3 class="h3">{L(lang, c.t)}</h3><p>{L(lang, c.d)}</p></div>)}
+      </div>
+    </div>
+  </section>
+  <CtaBand lang={lang} />
+</Base>
+
+<style>
+  .role-grid { display: grid; grid-template-columns: 0.75fr 1.25fr; gap: 60px; align-items: center; }
+  .role-sec:nth-of-type(odd) .role-grid { direction: inherit; }
+  .role-phone { display: flex; justify-content: center; position: sticky; top: 110px; align-self: start; }
+  .feats { margin-top: 34px; gap: 14px; }
+  .feat { display: flex; gap: 14px; padding: 18px; border-radius: 18px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); }
+  .feat h3 { font-size: 1.02rem; font-weight: 800; }
+  .feat p { margin: 4px 0 0; color: var(--muted); font-size: .94rem; }
+  .feat-ic { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: color-mix(in srgb, var(--tile) 16%, transparent); color: var(--tile); }
+  @media (max-width: 900px) { .role-grid { grid-template-columns: 1fr; } .role-phone { position: static; } }
+</style>

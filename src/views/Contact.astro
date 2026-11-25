@@ -1,0 +1,145 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import PageHero from '../components/PageHero.astro';
+import { SITE } from '../data/site';
+import { type Lang } from '../i18n/ui';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const fa = lang === 'fa';
+const c = SITE.contact;
+const title = fa ? 'تماس با نیلیکس' : 'Contact nilix';
+const description = fa
+  ? `تماس با تیم نیلیکس برای عضویت شرکت پخش، پشتیبانی فروشگاه‌ها، دریافت کلید API و همکاری بین‌المللی. تلفن ${c.phoneFa}، ایمیل ${c.email}، مشهد.`
+  : `Contact the nilix team about joining as a distributor, store support, API keys or international partnerships. Phone ${c.phoneEn}, email ${c.email}, Mashhad, Iran.`;
+
+const topics = [
+  ['general', fa ? 'سؤال عمومی' : 'General question'],
+  ['distributor', fa ? 'عضویت شرکت پخش' : 'Join as a distributor'],
+  ['store', fa ? 'پشتیبانی فروشگاه' : 'Store support'],
+  ['api', fa ? 'کلید API و یکپارچه‌سازی' : 'API key & integration'],
+  ['international', fa ? 'خرید یا همکاری بین‌المللی' : 'International buying or partnership'],
+];
+const mapUrl = `https://www.openstreetmap.org/search?query=${encodeURIComponent('Bozorgmehr Shomali, Sajjad Boulevard, Mashhad')}`;
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'ContactPage',
+  name: title,
+  description,
+  mainEntity: { '@id': `${SITE.url}/#org` },
+};
+---
+<Base lang={lang} title={title} description={description} path="/contact" jsonLd={[ld]}>
+  <PageHero lang={lang} eyebrow={fa ? 'تماس با ما' : 'Contact'}
+    title={fa ? 'با ما حرف بزنید' : 'Talk to us'}
+    lead={fa ? 'برای عضویت، پشتیبانی، اتصال API یا همکاری، تماس بگیرید، ایمیل بزنید یا فرم را پر کنید.' : 'Call, email or use the form for membership, support, API access or partnerships.'}
+    crumbs={[[fa ? 'تماس با ما' : 'Contact']]} />
+
+  <section class="section blend" data-scene="paper" style="padding-top:60px">
+    <div class="wrap contact">
+      <div class="info" data-stagger>
+        <a class="card info-card" href={`tel:${c.phoneIntl}`}>
+          <div class="icon-tile"><Icon name="phone" /></div>
+          <div><span class="muted">{fa ? 'تلفن' : 'Phone'}</span><b class="ltr">{fa ? c.phoneFa : c.phoneEn}</b></div>
+        </a>
+        <a class="card info-card" href={`mailto:${c.email}`}>
+          <div class="icon-tile" style="--tile:#38bdf8"><Icon name="mail" /></div>
+          <div><span class="muted">{fa ? 'ایمیل' : 'Email'}</span><b class="ltr">{c.email}</b></div>
+        </a>
+        <a class="card info-card" href={mapUrl} rel="noopener" target="_blank">
+          <div class="icon-tile" style="--tile:#10b981"><Icon name="pin" /></div>
+          <div><span class="muted">{fa ? 'نشانی' : 'Address'}</span><b>{fa ? c.addressFa : c.addressEn}</b></div>
+        </a>
+        <div class="card info-card">
+          <div class="icon-tile" style="--tile:#f59e0b"><Icon name="clock" /></div>
+          <div><span class="muted">{fa ? 'ساعت کاری' : 'Hours'}</span><b>{fa ? c.hoursFa : c.hoursEn}</b></div>
+        </div>
+      </div>
+
+      <form class="card form" id="contact-form" data-endpoint={SITE.contactEndpoint ?? ''} data-email={c.email} novalidate data-reveal>
+        <h2 class="h3">{fa ? 'فرم تماس' : 'Send a message'}</h2>
+        <div class="row">
+          <div class="field"><label for="f-name">{fa ? 'نام و نام خانوادگی' : 'Full name'}</label><input id="f-name" name="name" autocomplete="name" required /></div>
+          <div class="field"><label for="f-company">{fa ? 'نام کسب‌وکار' : 'Business name'}</label><input id="f-company" name="company" autocomplete="organization" /></div>
+        </div>
+        <div class="row">
+          <div class="field"><label for="f-phone">{fa ? 'شماره موبایل' : 'Mobile number'}</label><input id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" dir="ltr" placeholder={fa ? '09xxxxxxxxx' : '+…'} required /></div>
+          <div class="field"><label for="f-email">{fa ? 'ایمیل (اختیاری)' : 'Email (optional)'}</label><input id="f-email" name="email" type="email" autocomplete="email" dir="ltr" /></div>
+        </div>
+        <div class="field">
+          <label for="f-topic">{fa ? 'موضوع' : 'Topic'}</label>
+          <select id="f-topic" name="topic">{topics.map(([v, l]) => <option value={v}>{l}</option>)}</select>
+        </div>
+        <div class="field"><label for="f-msg">{fa ? 'پیام' : 'Message'}</label><textarea id="f-msg" name="message" required minlength="10"></textarea></div>
+        <button class="btn" type="submit"><Icon name="message" />{fa ? 'ارسال پیام' : 'Send message'}</button>
+        <p class="form-status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const form = document.getElementById('contact-form') as HTMLFormElement;
+  const fa = document.documentElement.lang === 'fa';
+  const status = form.querySelector<HTMLElement>('.form-status')!;
+  const topic = new URLSearchParams(location.search).get('topic');
+  if (topic) {
+    const sel = form.elements.namedItem('topic') as HTMLSelectElement;
+    if ([...sel.options].some((o) => o.value === topic)) sel.value = topic;
+  }
+  const say = (msg: string, ok: boolean) => { status.textContent = msg; status.className = `form-status ${ok ? 'ok' : 'err'}`; };
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form)) as Record<string, string>;
+    const phone = data.phone.replace(/[\s-]/g, '').replace(/[۰-۹]/g, (d) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)));
+    if (!data.name.trim()) return say(fa ? 'نام را وارد کنید.' : 'Please enter your name.', false);
+    if (!/^(09\d{9}|\+\d{8,15})$/.test(phone)) return say(fa ? 'شماره موبایل درست نیست؛ مثلاً ۰۹۱۵۱۲۳۴۵۶۷' : 'Enter a valid mobile number, e.g. +971501234567.', false);
+    if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) return say(fa ? 'ایمیل درست نیست.' : 'That email address is not valid.', false);
+    if (data.message.trim().length < 10) return say(fa ? 'پیام کمی کوتاه است.' : 'Your message is a little short.', false);
+    data.phone = phone;
+    data.lang = document.documentElement.lang;
+
+    const endpoint = form.dataset.endpoint;
+    if (endpoint) {
+      const btn = form.querySelector('button')!;
+      btn.disabled = true;
+      try {
+        const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        if (!res.ok) throw new Error(String(res.status));
+        form.reset();
+        say(fa ? 'پیام شما رسید؛ به‌زودی تماس می‌گیریم.' : 'Thanks — we will be in touch soon.', true);
+      } catch {
+        say(fa ? 'ارسال نشد. لطفاً دوباره تلاش کنید یا تماس بگیرید.' : 'Could not send. Please try again or call us.', false);
+      } finally {
+        btn.disabled = false;
+      }
+      return;
+    }
+    // no endpoint configured: hand the message to the visitor's mail app
+    const sel = form.elements.namedItem('topic') as HTMLSelectElement;
+    const subject = `nilix — ${sel.options[sel.selectedIndex].text}`;
+    const lines = [`${fa ? 'نام' : 'Name'}: ${data.name}`];
+    if (data.company) lines.push(`${fa ? 'کسب‌وکار' : 'Business'}: ${data.company}`);
+    lines.push(`${fa ? 'موبایل' : 'Mobile'}: ${phone}`);
+    if (data.email) lines.push(`Email: ${data.email}`);
+    const body = [...lines, '', data.message].join('\n');
+    location.href = `mailto:${form.dataset.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    say(fa ? 'برنامه‌ی ایمیل شما باز شد؛ پیام را از آنجا بفرستید.' : 'Your mail app has opened — send the message from there.', true);
+  });
+</script>
+
+<style>
+  .contact { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 24px; align-items: start; }
+  .info { display: grid; gap: 12px; }
+  .info-card { display: flex; gap: 16px; align-items: center; text-decoration: none; padding: 20px; }
+  .info-card .icon-tile { margin: 0; flex: none; }
+  .info-card span { display: block; font-size: .84rem; }
+  .info-card b { display: block; font-weight: 800; line-height: 1.6; }
+  a.info-card:hover { box-shadow: inset 0 0 0 1.5px var(--rose-2); }
+  .form { display: grid; gap: 16px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form .btn { justify-self: start; }
+  @media (max-width: 900px) { .contact, .row { grid-template-columns: 1fr; } }
+</style>

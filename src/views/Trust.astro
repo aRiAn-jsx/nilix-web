@@ -1,0 +1,85 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import Phone from '../components/Phone.astro';
+import Screen from '../components/Screen.astro';
+import PageHero from '../components/PageHero.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { type Lang, L } from '../i18n/ui';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const fa = lang === 'fa';
+const title = fa ? 'اعتماد و ضمانت در نیلیکس؛ تعهدات صنفی، فاکتور رسمی و تحویل QR' : 'Trust on nilix: trade commitments, official invoices and QR delivery';
+const description = fa
+  ? 'چطور نیلیکس خرید عمده را امن می‌کند: تعهد سلامت و اصالت کالا برای هر صنف، تاریخ انقضا، IRC و سیب سلامت برای دارو، گارانتی، فاکتور رسمی و تحویل با QR و کد یک‌بار مصرف.'
+  : 'How nilix keeps wholesale safe: health and authenticity commitments per trade, expiry dates, IRC for medicine, warranties, official invoices and QR plus one-time-code delivery.';
+
+const guilds = [
+  { icon: 'shield', tone: '#10b981', t: { fa: 'همه‌ی صنف‌ها', en: 'Every trade' }, items: { fa: ['اصالت کالا؛ بدون کالای تقلبی یا قاچاق', 'سلامت کالا در نگهداری، بسته‌بندی و حمل', 'ضمانت تعویض یا مرجوعی کالای معیوب', 'بیمه‌ی مسئولیت مدنی و مسئولیت کالا'], en: ['Authenticity: no counterfeit or smuggled goods', 'Safety in storage, packing and transport', 'Replacement or refund for faulty goods', 'Civil and product liability insurance'] } },
+  { icon: 'sparkle', tone: '#f59e0b', t: { fa: 'مواد غذایی و سوپرمارکت', en: 'Food & grocery' }, items: { fa: ['تاریخ انقضای ثبت‌شده و به‌روز برای هر کالا', 'پروانه‌ی ساخت و مجوز سازمان غذا و دارو', 'زنجیره‌ی سرد برای کالای یخچالی و منجمد'], en: ['A recorded, in-date expiry on every item', 'Manufacturing licence and FDA number', 'Cold chain for chilled and frozen goods'] } },
+  { icon: 'pill', tone: '#f43f5e', t: { fa: 'دارو و سلامت', en: 'Pharmacy & health' }, items: { fa: ['نماد سیب سلامت و کد IRC شانزده‌رقمی', 'تاریخ انقضای معتبر', 'شرایط نگهداری سازنده', 'مجوز توزیع فرآورده‌های سلامت'], en: ['Iran health seal and 16-digit IRC code', 'Valid expiry date', "The maker's storage conditions", 'Licence to distribute health products'] } },
+  { icon: 'phone', tone: '#38bdf8', t: { fa: 'کالای دیجیتال', en: 'Electronics' }, items: { fa: ['گارانتی معتبر با نام شرکت و مدت', 'رجیستری گوشی در سامانه‌ی همتا'], en: ['A real warranty, with company and term', 'Phones registered in Hamta'] } },
+  { icon: 'sparkle', tone: '#eab308', t: { fa: 'طلا و جواهر', en: 'Jewellery' }, items: { fa: ['عیار مشخص با انگ یا گواهی آزمایشگاه', 'وزن دقیق با ترازوی کالیبره در فاکتور'], en: ['Stated purity with hallmark or assay', 'Exact weight on a calibrated scale, on the invoice'] } },
+  { icon: 'plug', tone: '#a78bfa', t: { fa: 'لوازم یدکی، ابزار و پوشاک', en: 'Parts, tools & apparel' }, items: { fa: ['نوع قطعه (اصلی، OEM، طرح) و شماره‌ی فنی', 'نشان استاندارد برای قطعات ایمنی و ابزار برقی', 'برچسب جنس، سایز و کشور سازنده برای پوشاک'], en: ['Part type (genuine, OEM, aftermarket) and part number', 'Standard mark on safety parts and power tools', 'Fabric, size and origin labels on apparel'] } },
+];
+const guards = [
+  { icon: 'invoice', screen: 'invoice' as const, t: { fa: 'فاکتور رسمی برای هر سفارش', en: 'An official invoice for every order' }, d: { fa: 'با شماره، طرفین، ارزش افزوده و QR هر ردیف. نسخه‌ی PDF قابل دانلود و چاپ است.', en: 'Numbered, with both parties, VAT and a QR per line — downloadable as a PDF.' } },
+  { icon: 'qr', screen: 'delivered' as const, t: { fa: 'تحویل با QR و کد یک‌بار مصرف', en: 'QR and one-time-code handover' }, d: { fa: 'کارتن‌ها هنگام تحویل با QR تطبیق داده می‌شوند و کد شش‌رقمی تحویل را به خریدار واقعی گره می‌زند.', en: 'Cartons are matched by QR at the door and a six-digit code ties the handover to the real buyer.' } },
+];
+---
+<Base lang={lang} title={title} description={description} path="/trust">
+  <PageHero lang={lang} scene="cream" eyebrow={fa ? 'اعتماد و ضمانت' : 'Trust & guarantees'}
+    title={fa ? 'خرید عمده بدون نگرانی' : 'Wholesale without the worry'}
+    lead={fa ? 'تعهدات صنفی هنگام ثبت‌نام، شرط‌های کالا هنگام ثبت هر محصول و سند رسمی برای هر تحویل.' : 'Trade commitments at sign-up, product rules at every listing and a paper trail for every delivery.'}
+    crumbs={[[fa ? 'اعتماد' : 'Trust']]} />
+
+  <section class="section blend" data-scene="paper">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">{fa ? 'تعهدات صنفی' : 'Trade commitments'}</span>
+        <h2 class="h2" data-reveal>{fa ? 'هر صنف، شرط‌های خودش' : 'Each trade, its own rules'}</h2>
+        <p class="lead">{fa ? 'شرکت پخش هنگام ثبت‌نام تعهدات صنف خود را تیک می‌زند و بدون آن حسابش فعال نمی‌شود. هنگام ثبت هر کالا هم همان شرط‌ها (مثل تاریخ انقضا یا کد IRC) بررسی می‌شود و کالای ناقص منتشر نمی‌شود.' : 'Distributors tick their trade\'s commitments at sign-up — no tick, no account. The same rules (expiry date, IRC code…) are checked whenever a product is listed, and incomplete products are not published.'}</p>
+      </div>
+      <div class="grid g3" data-stagger>
+        {guilds.map((g) => (
+          <div class="card" style={`--tile:${g.tone}`}>
+            <div class="icon-tile"><Icon name={g.icon} /></div>
+            <h3 class="h3">{L(lang, g.t)}</h3>
+            <ul class="check-list">{L(lang, g.items).map((x) => <li>{x}</li>)}</ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {guards.map((g, i) => (
+    <section class="section blend" data-scene={i ? 'night' : 'ink'}>
+      <div class="wrap guard">
+        <div data-reveal="scale" class="guard-phone"><Phone width={270}><Screen kind={g.screen} lang={lang} /></Phone></div>
+        <div>
+          <div class="icon-tile"><Icon name={g.icon} /></div>
+          <h2 class="h2">{L(lang, g.t)}</h2>
+          <p class="lead" style="margin-top:16px">{L(lang, g.d)}</p>
+        </div>
+      </div>
+    </section>
+  ))}
+
+  <section class="section blend" data-scene="paper">
+    <div class="wrap">
+      <div class="grid g3" data-stagger>
+        <div class="card"><div class="icon-tile"><Icon name="star" /></div><h3 class="h3">{fa ? 'امتیاز واقعی' : 'Real ratings'}</h3><p>{fa ? 'خریداران بعد از سفارش به فروشنده امتیاز می‌دهند و امتیاز در پروفایل فروشنده دیده می‌شود.' : 'Buyers rate the seller after an order, and ratings show on the seller profile.'}</p></div>
+        <div class="card"><div class="icon-tile"><Icon name="users" /></div><h3 class="h3">{fa ? 'اعضای بررسی‌شده' : 'Reviewed members'}</h3><p>{fa ? 'مدارک شرکت‌های پخش و رانندگان پیش از فعال شدن بررسی می‌شود.' : 'Distributor and driver documents are reviewed before going live.'}</p></div>
+        <div class="card"><div class="icon-tile"><Icon name="lock" /></div><h3 class="h3">{fa ? 'ورود امن' : 'Secure sign-in'}</h3><p>{fa ? 'ورود با کد تأیید پیامکی و دسترسی جدا برای هر نقش.' : 'SMS-code sign-in and separate access for each role.'}</p></div>
+      </div>
+    </div>
+  </section>
+  <CtaBand lang={lang} />
+</Base>
+
+<style>
+  .guard { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 60px; align-items: center; }
+  .guard-phone { display: flex; justify-content: center; }
+  @media (max-width: 900px) { .guard { grid-template-columns: 1fr; } }
+</style>

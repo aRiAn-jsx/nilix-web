@@ -1,0 +1,24 @@
+---
+import Downloads from './Downloads.astro';
+import Phone from './Phone.astro';
+import Screen from './Screen.astro';
+import { type Lang, t } from '../i18n/ui';
+interface Props { lang: Lang; scene?: string }
+const { lang, scene = 'paper' } = Astro.props;
+---
+<section class="section blend" data-scene={scene}>
+  <div class="wrap">
+    <div class="cta" data-reveal="scale">
+      <div>
+        <h2 class="h2">{t(lang, 'ctaTitle')}</h2>
+        <p class="lead" style="margin-top:16px">{t(lang, 'ctaText')}</p>
+        <div style="margin-top:28px"><Downloads lang={lang} /></div>
+      </div>
+      <div class="cta-one" aria-hidden="true"><Phone width={220}><Screen kind="product" lang={lang} /></Phone></div>
+    </div>
+  </div>
+</section>
+<style>
+  .cta-one { display: flex; justify-content: center; margin-bottom: -140px; rotate: -5deg; }
+  @media (max-width: 900px) { .cta-one { display: none; } }
+</style>

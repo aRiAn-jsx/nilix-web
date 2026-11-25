@@ -1,0 +1,39 @@
+---
+/** Direct APK, Cafe Bazaar, Myket and the web app — the store buttons read "coming soon" until SITE has their links. */
+import Icon from './Icon.astro';
+import { SITE } from '../data/site';
+import { type Lang, t } from '../i18n/ui';
+
+interface Props { lang: Lang; web?: boolean; class?: string }
+const { lang, web = true, class: cls } = Astro.props;
+const stores = [
+  { url: SITE.bazaar, label: t(lang, 'bazaar'), icon: 'bag' },
+  { url: SITE.myket, label: t(lang, 'myket'), icon: 'android' },
+] as const;
+---
+<div class:list={['store-btns', cls]}>
+  <a class="store primary" href={SITE.apk} rel="noopener" download>
+    <span class="ic"><Icon name="download" /></span>
+    <span><small>{t(lang, 'apkNote')}</small><b>{t(lang, 'downloadApk')}</b></span>
+  </a>
+  {stores.map((s) =>
+    s.url ? (
+      <a class="store" href={s.url} rel="noopener">
+        <span class="ic"><Icon name={s.icon} /></span>
+        <span><small>{t(lang, 'getOn')}</small><b>{s.label}</b></span>
+      </a>
+    ) : (
+      <span class="store soon" aria-disabled="true">
+        <span class="badge-soon">{t(lang, 'soon')}</span>
+        <span class="ic"><Icon name={s.icon} /></span>
+        <span><small>{t(lang, 'getOn')}</small><b>{s.label}</b></span>
+      </span>
+    )
+  )}
+  {web && (
+    <a class="store" href={SITE.webApp} rel="noopener">
+      <span class="ic"><Icon name="browser" /></span>
+      <span><small class="ltr" style="text-align:start">web.nilix.co</small><b>{t(lang, 'openApp')}</b></span>
+    </a>
+  )}
+</div>

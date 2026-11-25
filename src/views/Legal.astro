@@ -1,0 +1,148 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import { SITE } from '../data/site';
+import { type Lang } from '../i18n/ui';
+
+interface Props { lang: Lang; kind: 'terms' | 'privacy' }
+const { lang, kind } = Astro.props;
+const fa = lang === 'fa';
+const c = SITE.contact;
+const meta = {
+  terms: {
+    title: fa ? 'قوانین و مقررات استفاده از نیلیکس' : 'nilix terms of use',
+    h: fa ? 'قوانین و مقررات' : 'Terms of use',
+    d: fa ? 'شرایط استفاده از اپ و وب‌سایت نیلیکس برای فروشگاه‌ها، شرکت‌های پخش و رانندگان.' : 'The terms for using the nilix app and website as a store, distributor or driver.',
+  },
+  privacy: {
+    title: fa ? 'سیاست حریم خصوصی نیلیکس' : 'nilix privacy policy',
+    h: fa ? 'حریم خصوصی' : 'Privacy policy',
+    d: fa ? 'نیلیکس چه اطلاعاتی جمع می‌کند، چرا، با چه کسی به اشتراک می‌گذارد و شما چه حقی دارید.' : 'What nilix collects, why, who it is shared with and what rights you have.',
+  },
+}[kind];
+---
+<Base lang={lang} title={meta.title} description={meta.d} path={`/${kind}`}>
+  <PageHero lang={lang} eyebrow={fa ? 'حقوقی' : 'Legal'} title={meta.h} lead={fa ? 'آخرین به‌روزرسانی: آذر ۱۴۰۵' : 'Last updated: November 2026'} crumbs={[[meta.h]]} />
+  <section class="section blend" data-scene="paper" style="padding-top:60px">
+    <div class="wrap prose">
+      {kind === 'terms' && fa && (<>
+        <p>این متن شرایط استفاده از اپ، وب‌اپ و وب‌سایت نیلیکس است. با ثبت‌نام یا استفاده از نیلیکس این شرایط را می‌پذیرید.</p>
+        <h2>۱. نقش نیلیکس</h2>
+        <p>نیلیکس بستری است که فروشگاه‌ها (خریدار)، شرکت‌های پخش و بنکداران (فروشنده) و رانندگان را به هم وصل می‌کند. قرارداد خرید و فروش میان خریدار و فروشنده بسته می‌شود و فروشنده مسئول کالا، قیمت، موجودی و فاکتور خود است.</p>
+        <h2>۲. حساب کاربری</h2>
+        <ul>
+          <li>اطلاعات ثبت‌نام باید درست و کامل باشد و با تغییر آن به‌روز شود.</li>
+          <li>ورود با کد یک‌بار مصرف پیامکی انجام می‌شود؛ حفاظت از گوشی و شماره‌ی موبایل با شماست.</li>
+          <li>نیلیکس می‌تواند حساب‌هایی را که اطلاعات نادرست دارند یا این شرایط را نقض می‌کنند، تعلیق کند.</li>
+        </ul>
+        <h2>۳. تعهدات فروشنده</h2>
+        <ul>
+          <li>رعایت تعهدات صنفی که هنگام ثبت‌نام تأیید شده است، از جمله اصالت و سلامت کالا، ضمانت و بیمه‌ی مسئولیت.</li>
+          <li>ثبت اطلاعات درست کالا، از جمله تاریخ انقضا، کد IRC یا گارانتی بسته به صنف.</li>
+          <li>صدور فاکتور رسمی مطابق تعداد تأییدشده و رعایت قوانین مالیاتی.</li>
+        </ul>
+        <h2>۴. تعهدات خریدار</h2>
+        <ul>
+          <li>تحویل گرفتن سفارش تأییدشده و اسکن QR هنگام تحویل.</li>
+          <li>پرداخت مبلغ فاکتور به روش توافق‌شده.</li>
+          <li>اعلام مغایرت یا ایراد کالا هنگام تحویل یا از طریق پشتیبانی.</li>
+        </ul>
+        <h2>۵. محتوا و مالکیت</h2>
+        <p>نام، لوگو و نرم‌افزار نیلیکس متعلق به نیلیکس است. اطلاعات و تصاویری که کاربران بارگذاری می‌کنند متعلق به خودشان است و نیلیکس فقط برای نمایش و انجام سفارش از آن‌ها استفاده می‌کند.</p>
+        <h2>۶. محدودیت مسئولیت</h2>
+        <p>نیلیکس برای در دسترس بودن پیوسته‌ی سرویس تلاش می‌کند، اما مسئول خسارت ناشی از قطعی اینترنت، خطای اطلاعات واردشده توسط کاربران یا اختلاف تجاری خریدار و فروشنده نیست؛ در اختلاف‌ها، سوابق سفارش، فاکتور و QR در اختیار طرفین قرار می‌گیرد.</p>
+        <h2>۷. تغییر شرایط</h2>
+        <p>این شرایط ممکن است تغییر کند. تغییرات مهم از طریق اپ اعلام می‌شود و ادامه‌ی استفاده به معنی پذیرش آن‌هاست.</p>
+        <h2>۸. تماس</h2>
+        <p>پرسش‌ها را به <a href={`mailto:${c.email}`}>{c.email}</a> بفرستید یا با <span class="ltr">{c.phoneFa}</span> تماس بگیرید.</p>
+      </>)}
+      {kind === 'terms' && !fa && (<>
+        <p>These terms cover the nilix app, web app and website. By signing up or using nilix you accept them.</p>
+        <h2>1. What nilix does</h2>
+        <p>nilix is a platform connecting stores (buyers), distributors and wholesalers (sellers) and drivers. Sales contracts are between buyer and seller, and the seller is responsible for its goods, prices, stock and invoices.</p>
+        <h2>2. Accounts</h2>
+        <ul>
+          <li>Registration details must be accurate and kept up to date.</li>
+          <li>Sign-in uses a one-time SMS code; keeping your phone and number secure is your responsibility.</li>
+          <li>nilix may suspend accounts with false information or that break these terms.</li>
+        </ul>
+        <h2>3. Seller obligations</h2>
+        <ul>
+          <li>Keep the trade commitments accepted at sign-up, including authenticity, product safety, guarantee and liability insurance.</li>
+          <li>Enter accurate product data, including expiry date, IRC code or warranty depending on the trade.</li>
+          <li>Issue official invoices matching confirmed quantities and comply with tax law.</li>
+        </ul>
+        <h2>4. Buyer obligations</h2>
+        <ul>
+          <li>Accept confirmed orders and scan the QR code on delivery.</li>
+          <li>Pay invoices by the agreed method.</li>
+          <li>Report discrepancies or defects on delivery or through support.</li>
+        </ul>
+        <h2>5. Content and ownership</h2>
+        <p>The nilix name, logo and software belong to nilix. Data and images uploaded by users remain theirs; nilix uses them only to display listings and fulfil orders.</p>
+        <h2>6. Limitation of liability</h2>
+        <p>nilix works to keep the service available but is not liable for losses from internet outages, errors in user-entered data or commercial disputes between buyer and seller; in disputes, order, invoice and QR records are made available to both parties.</p>
+        <h2>7. Changes</h2>
+        <p>These terms may change. Material changes are announced in the app, and continued use means acceptance.</p>
+        <h2>8. Contact</h2>
+        <p>Write to <a href={`mailto:${c.email}`}>{c.email}</a> or call {c.phoneEn}.</p>
+      </>)}
+      {kind === 'privacy' && fa && (<>
+        <p>این سیاست توضیح می‌دهد نیلیکس چه اطلاعاتی از شما نگه می‌دارد و با آن چه می‌کند.</p>
+        <h2>اطلاعاتی که جمع می‌کنیم</h2>
+        <ul>
+          <li><strong>اطلاعات حساب:</strong> نام، شماره موبایل، نام کسب‌وکار، استان یا کشور، شهر و نشانی؛ برای شرکت‌های پخش اطلاعات ثبتی و برای رانندگان مدارک حمل.</li>
+          <li><strong>اطلاعات معامله:</strong> سفارش‌ها، فاکتورها، پرداخت‌ها، امتیازها و سوابق تحویل.</li>
+          <li><strong>اطلاعات فنی:</strong> نوع دستگاه و مرورگر و گزارش خطا برای پایداری سرویس.</li>
+        </ul>
+        <h2>چرا از آن استفاده می‌کنیم</h2>
+        <ul>
+          <li>انجام سفارش، صدور فاکتور، ارسال و تحویل؛</li>
+          <li>ارسال کد ورود و اعلان‌های وضعیت سفارش؛</li>
+          <li>بررسی اعضا و جلوگیری از تقلب؛</li>
+          <li>بهبود اپ و پشتیبانی.</li>
+        </ul>
+        <h2>با چه کسی به اشتراک می‌گذاریم</h2>
+        <p>اطلاعات لازم برای هر سفارش فقط با طرف‌های همان سفارش (خریدار، فروشنده و راننده) به اشتراک گذاشته می‌شود. پیامک‌ها از طریق سرویس‌دهنده‌ی پیامک ارسال می‌شوند. اطلاعات شما فروخته نمی‌شود. در صورت درخواست قانونی مراجع ذی‌صلاح، اطلاعات طبق قانون ارائه می‌شود.</p>
+        <h2>اتصال‌ها و API</h2>
+        <p>اگر شرکت پخش کلید API بسازد یا داده را به اکسل خروجی بگیرد، مسئولیت نگه‌داری آن داده در سیستم‌های خودش با همان شرکت است.</p>
+        <h2>نگه‌داری و امنیت</h2>
+        <p>اطلاعات روی سرورهای امن و با ارتباط رمزنگاری‌شده (HTTPS) نگه‌داری می‌شود. سوابق مالی تا زمانی که قانون الزام کند حفظ می‌شود.</p>
+        <h2>حقوق شما</h2>
+        <p>می‌توانید اطلاعات حساب خود را در اپ ببینید و اصلاح کنید و درخواست حذف حساب بدهید. سوابق مالی که قانوناً باید بمانند حذف نمی‌شوند.</p>
+        <h2>وب‌سایت</h2>
+        <p>این وب‌سایت کوکی ردیابی تبلیغاتی ندارد. فرم تماس فقط اطلاعاتی را که خودتان وارد می‌کنید برای پاسخ‌گویی به ما می‌رساند.</p>
+        <h2>تماس</h2>
+        <p>برای پرسش درباره‌ی حریم خصوصی به <a href={`mailto:${c.email}`}>{c.email}</a> ایمیل بزنید.</p>
+      </>)}
+      {kind === 'privacy' && !fa && (<>
+        <p>This policy explains what nilix keeps about you and what it does with it.</p>
+        <h2>What we collect</h2>
+        <ul>
+          <li><strong>Account data:</strong> name, mobile number, business name, province or country, city and address; registration details for distributors and transport documents for drivers.</li>
+          <li><strong>Trade data:</strong> orders, invoices, payments, ratings and delivery records.</li>
+          <li><strong>Technical data:</strong> device and browser type and error logs, to keep the service stable.</li>
+        </ul>
+        <h2>Why we use it</h2>
+        <ul>
+          <li>To fulfil orders, issue invoices, ship and deliver;</li>
+          <li>to send sign-in codes and order notifications;</li>
+          <li>to review members and prevent fraud;</li>
+          <li>to improve the app and support you.</li>
+        </ul>
+        <h2>Who we share it with</h2>
+        <p>Data needed for an order is shared only with the parties to that order (buyer, seller and driver). SMS goes through our SMS provider. We do not sell your data. Lawful requests from competent authorities are answered as the law requires.</p>
+        <h2>Integrations and API</h2>
+        <p>If a distributor creates an API key or exports data to Excel, that distributor is responsible for the data in its own systems.</p>
+        <h2>Storage and security</h2>
+        <p>Data is kept on secured servers and sent over encrypted connections (HTTPS). Financial records are kept as long as the law requires.</p>
+        <h2>Your rights</h2>
+        <p>You can view and correct your account data in the app and ask for your account to be deleted. Financial records that must be kept by law are retained.</p>
+        <h2>This website</h2>
+        <p>This website uses no advertising trackers. The contact form only sends us what you type, so we can reply.</p>
+        <h2>Contact</h2>
+        <p>Privacy questions: <a href={`mailto:${c.email}`}>{c.email}</a>.</p>
+      </>)}
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,565 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import Phone from '../components/Phone.astro';
+import Screen from '../components/Screen.astro';
+import Downloads from '../components/Downloads.astro';
+import Faq from '../components/Faq.astro';
+import { SITE } from '../data/site';
+import { ROLES, JOURNEY, SYSTEMS } from '../data/content';
+import { HOME_FAQ } from '../data/faq';
+import { type Lang, href, num, t, L, formatDate } from '../i18n/ui';
+import { posts, postPath } from '../lib/blog';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const fa = lang === 'fa';
+const latest = (await posts(lang)).slice(0, 3);
+
+const title = fa ? 'نیلیکس | بازار عمده‌فروشی آنلاین و نرم‌افزار پخش مویرگی' : 'nilix | Online wholesale marketplace & distribution software';
+const description = fa
+  ? 'نیلیکس فروشگاه‌ها را به شرکت‌های پخش وصل می‌کند: خرید عمده‌ی کارتنی، پیش‌فاکتور و فاکتور رسمی، ناوگان و راننده، تحویل با QR و حسابداری خودکار، روی اندروید و وب.'
+  : 'nilix connects stores with distributors: carton wholesale ordering, pro-forma and official invoices, fleet dispatch, QR-verified delivery and automatic bookkeeping, on Android and web.';
+
+const trades = fa
+  ? ['سوپرمارکت', 'هایپرمارکت', 'داروخانه', 'لوازم دیجیتال', 'لوازم یدکی', 'آرایشی و بهداشتی', 'پوشاک', 'ابزار و یراق', 'طلا و جواهر', 'خشکبار', 'لبنیات', 'نوشیدنی']
+  : ['Supermarkets', 'Hypermarkets', 'Pharmacies', 'Electronics', 'Auto parts', 'Cosmetics', 'Apparel', 'Hardware', 'Jewellery', 'Dry goods', 'Dairy', 'Beverages'];
+
+const ticker = [
+  { i: 'invoice', t: fa ? 'پیش‌فاکتور' : 'Pro-forma' },
+  { i: 'building', t: fa ? 'تأیید پخش' : 'Confirmed' },
+  { i: 'truck', t: fa ? 'در مسیر' : 'On the way' },
+  { i: 'qr', t: fa ? 'تحویل QR' : 'QR handover' },
+];
+
+const statement = fa
+  ? 'خرید عمده هنوز با تلفن، ویزیتور و دفترچه می‌چرخد. نیلیکس همه را در یک جریان شفاف جمع می‌کند؛ از سفارش تا تحویل و حساب.'
+  : 'Wholesale still runs on phone calls, sales reps and notebooks. nilix puts it all in one clear flow — from order to delivery to the books.';
+
+const storySteps = [
+  { role: ROLES[0], screen: 'cart' as const },
+  { role: ROLES[1], screen: 'vendor' as const },
+  { role: ROLES[2], screen: 'driver' as const },
+  { role: ROLES[1], screen: 'books' as const, override: { fa: 'حسابداری که خودش پر می‌شود', en: 'Books that fill themselves' }, text: { fa: 'هر سفارش تحویل‌شده خودکار در فروش، مطالبات و سود ثبت می‌شود. هزینه‌ها را اضافه کنید و گزارش را به اکسل ببرید یا با API به نرم‌افزار حسابداری‌تان بفرستید.', en: 'Every delivered order posts itself to sales, receivables and profit. Add expenses, export to Excel or push to your accounting software through the API.' } },
+  { role: ROLES[3], screen: 'admin' as const },
+];
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: fa ? 'نیلیکس' : 'nilix',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Android, Web',
+    url: SITE.url,
+    downloadUrl: SITE.apk,
+    inLanguage: ['fa', 'en'],
+    description,
+    publisher: { '@id': `${SITE.url}/#org` },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: HOME_FAQ.map((f) => ({ '@type': 'Question', name: f.q[lang], acceptedAnswer: { '@type': 'Answer', text: f.a[lang] } })),
+  },
+];
+---
+<Base lang={lang} title={title} description={description} path="/" jsonLd={jsonLd} scene="ink">
+
+  <!-- HERO -->
+  <section class="hero blend" data-scene="ink" data-hero>
+    <div class="hero-bg" aria-hidden="true">
+      <span class="hero-ring" data-pointer="0.3"></span>
+    </div>
+
+    <div class="wrap hero-grid">
+      <div class="hero-copy" data-hero-head>
+        <span class="live glass" data-hero-in><i></i>{fa ? 'بازار عمده‌فروشی B2B · فارسی و English' : 'B2B wholesale marketplace · English & Persian'}</span>
+        <h1 class="display hero-title">
+          {fa ? (
+            <><span class="line"><span data-word>از انبار پخش</span></span><span class="line"><span data-word>تا <em>قفسه‌ی مغازه</em></span></span><span class="line"><span data-word class="outline">در یک اپ.</span></span></>
+          ) : (
+            <><span class="line"><span data-word>Warehouse</span></span><span class="line"><span data-word>to <em>shelf,</em></span></span><span class="line"><span data-word class="outline">in one app.</span></span></>
+          )}
+        </h1>
+        <p class="lead" data-hero-in>{fa
+          ? 'فروشگاه‌ها کارتنی سفارش می‌دهند، شرکت پخش تأیید می‌کند، راننده می‌برد و QR تحویل را ثبت می‌کند؛ حسابداری هم خودش به‌روز می‌شود.'
+          : 'Stores order by the carton, distributors confirm, drivers deliver and a QR scan records the handover — while the books update themselves.'}</p>
+        <div data-hero-in class="hero-dl"><Downloads lang={lang} /></div>
+      </div>
+
+      <div class="hero-stage">
+        <svg class="hero-n" viewBox="128 128 256 256" aria-hidden="true" data-pointer="0.5">
+          <path pathLength="1" d="M160 352V160l192 192V160" fill="none" stroke="#d0051f" stroke-width="58" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span class="hero-dot" aria-hidden="true" data-pointer="1.2"></span>
+        <div class="stage-phone" data-hero-phone>
+          <Phone width={270}><Screen kind="home" lang={lang} eager /></Phone>
+        </div>
+        <div class="chip-f glass glass-shine cf1" data-float>
+          <span class="cf-ic"><Icon name="qr" size={18} /></span>
+          <span><b>{fa ? 'تحویل تأیید شد' : 'Delivered'}</b><small>{fa ? `${num(lang, 14)} کارتن · سوپرمارکت آفتاب` : '14 cartons · Aftab'}</small></span>
+        </div>
+        <div class="chip-f glass glass-shine cf2" data-float>
+          <span class="cf-ic dark"><Icon name="invoice" size={18} /></span>
+          <span><b>{fa ? 'فاکتور رسمی صادر شد' : 'Invoice issued'}</b><small>{fa ? 'با ارزش افزوده و QR' : 'VAT + QR codes'}</small></span>
+        </div>
+        <div class="tracker glass glass-shine" data-float data-ticker>
+          <div class="tr-head"><b>{fa ? `سفارش ${num(lang, 10428)}` : 'Order 10428'}</b><span class="tr-live"><i></i>{fa ? 'زنده' : 'Live'}</span></div>
+          <ol>
+            {ticker.map((s, i) => <li class:list={[i === 0 && 'on']}><span><Icon name={s.i} size={15} /></span><small>{s.t}</small></li>)}
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track" data-marquee>
+        {[...trades, ...trades].map((tr) => <span>{tr}<i></i></span>)}
+      </div>
+    </div>
+  </section>
+
+  <!-- STATEMENT -->
+  <section class="section blend" data-scene="ink">
+    <div class="wrap">
+      <span class="eyebrow">{fa ? 'چرا نیلیکس' : 'Why nilix'}</span>
+      <p class="statement" data-words>{statement.split(' ').map((w) => <span>{w} </span>)}</p>
+      <div class="grid g3 pains" data-stagger>
+        {[
+          ['clock', fa ? 'زمانی که هدر نمی‌رود' : 'No time lost', fa ? 'به‌جای تماس با چند ویزیتور، کالای همه‌ی پخش‌ها را یک‌جا ببینید و در چند دقیقه سفارش دهید.' : 'Instead of calling several reps, see every distributor in one place and order in minutes.'],
+          ['shield', fa ? 'اختلافی که پیش نمی‌آید' : 'No disputes', fa ? 'تعداد کارتن، قیمت و تحویل‌گیرنده با پیش‌فاکتور، فاکتور رسمی و QR ثبت می‌شود.' : 'Cartons, prices and recipient are fixed by pro-forma, official invoice and QR.'],
+          ['chart', fa ? 'حسابی که خودش جور است' : 'Books that balance', fa ? 'فروش، مطالبات و هزینه‌ها بدون ورود دستی، با خروجی اکسل و اتصال به حسابداری.' : 'Sales, receivables and expenses without data entry, with Excel export and accounting sync.'],
+        ].map(([ic, h, p], i) => (
+          <div class="card" data-tilt>
+            <span class="card-n">{num(lang, String(i + 1).padStart(2, '0'))}</span>
+            <div class="icon-tile"><Icon name={ic} /></div>
+            <h3 class="h3">{h}</h3><p>{p}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ROLES -->
+  <section class="section blend" data-scene="paper">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">{fa ? 'برای همه‌ی زنجیره' : 'For the whole chain'}</span>
+        <h2 class="h2" data-reveal>{fa ? <>چهار نقش، <span class="accent">یک اپ</span></> : <>Four roles, <span class="accent">one app</span></>}</h2>
+        <p class="lead" data-reveal>{fa ? 'هر کس با همان اپ وارد می‌شود و پنلی را می‌بیند که برای کار خودش ساخته شده.' : 'Everyone signs in to the same app and sees a panel built for their job.'}</p>
+      </div>
+      <div class="roles" data-stagger>
+        {ROLES.map((r, i) => (
+          <a class:list={['role', i === 0 && 'big', i === 1 && 'big dark']} href={href(lang, `/features#${r.id}`)} data-tilt>
+            <div class="role-top">
+              <div class="icon-tile"><Icon name={r.icon} /></div>
+              <span class="role-go"><Icon name="arrow" size={18} class="flip" /></span>
+            </div>
+            <h3 class="h3">{L(lang, r.name)}</h3>
+            <p>{L(lang, r.pitch)}</p>
+            <div class="chips">{r.features.slice(0, i < 2 ? 4 : 2).map((f) => <span class="chip">{L(lang, f.title)}</span>)}</div>
+            {i < 2 && <div class="role-phone" aria-hidden="true"><Phone width={190}><Screen kind={r.screen} lang={lang} /></Phone></div>}
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- PHONE STORY -->
+  <section class="section story blend" data-scene="ink" data-story>
+    <div class="wrap story-grid">
+      <div class="story-pin">
+        <div class="story-disc" aria-hidden="true"></div>
+        <div class="story-phone" data-story-phone>
+          <Phone width={300}>
+            {storySteps.map((s) => <div class="story-screen" data-story-screen><Screen kind={s.screen} lang={lang} /></div>)}
+          </Phone>
+        </div>
+        <div class="story-dots" aria-hidden="true">{storySteps.map(() => <i data-story-dot></i>)}</div>
+      </div>
+      <div class="story-steps">
+        <div class="section-head" style="margin-bottom:0">
+          <span class="eyebrow">{fa ? 'داخل پنل‌ها' : 'Inside the panels'}</span>
+          <h2 class="h2">{fa ? 'هر کس کار خودش؛ همه روی یک سفارش' : 'Everyone on their own job, all on one order'}</h2>
+        </div>
+        {storySteps.map((s, i) => (
+          <article class="story-step" data-story-step>
+            <div class="story-mobile-phone"><Phone width={230}><Screen kind={s.screen} lang={lang} /></Phone></div>
+            <span class="story-n">{num(lang, String(i + 1).padStart(2, '0'))} — {L(lang, s.role.name)}</span>
+            <h3 class="h3">{s.override ? L(lang, s.override) : L(lang, s.role.features[0].title)}</h3>
+            <p class="muted">{s.text ? L(lang, s.text) : L(lang, s.role.pitch)}</p>
+            <ul class="check-list">{s.role.features.slice(1, 4).map((f) => <li>{L(lang, f.title)}</li>)}</ul>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- JOURNEY -->
+  <section class="journey" data-scene="rose" data-track>
+    <div class="journey-disc" aria-hidden="true"></div>
+    <div class="journey-head wrap">
+      <div>
+        <span class="eyebrow">{fa ? 'روند سفارش' : 'How an order moves'}</span>
+        <h2 class="h2" style="margin-top:14px">{fa ? 'یک سفارش، از صفر تا صد' : 'One order, start to finish'}</h2>
+      </div>
+      <a class="btn btn-ghost btn-sm" href={href(lang, '/how-it-works')}>{fa ? 'روند کامل' : 'Full walkthrough'} <Icon name="arrow" size={18} class="flip" /></a>
+    </div>
+    <div class="journey-rail" aria-hidden="true">
+      <div class="rail-line"><i data-track-fill></i></div>
+      <div class="rail-mover" data-track-mover><Icon name="truck" size={20} /></div>
+    </div>
+    <ol class="journey-track" data-track-inner>
+      {JOURNEY.map((s) => (
+        <li class="jcard glass glass-shine" data-track-card>
+          <div class="jtop"><span class="jnum">{num(lang, String(s.n).padStart(2, '0'))}</span><span class="jic"><Icon name={s.icon} size={22} /></span></div>
+          <span class="jwho">{L(lang, s.who)}</span>
+          <h3 class="h3">{L(lang, s.title)}</h3>
+          <p>{L(lang, s.text)}</p>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <!-- TRUST -->
+  <section class="section blend" data-scene="paper">
+    <div class="wrap trust">
+      <div class="section-head">
+        <span class="eyebrow">{fa ? 'اعتماد' : 'Trust'}</span>
+        <h2 class="h2" data-reveal>{fa ? 'هر فروشنده متعهد است؛ هر کالا شناسنامه دارد' : 'Every seller is committed; every product has papers'}</h2>
+        <p class="lead" data-reveal>{fa
+          ? 'شرکت‌های پخش هنگام ثبت‌نام تعهدات صنف خود را می‌پذیرند و همان شرط‌ها هنگام ثبت هر کالا دوباره بررسی می‌شود.'
+          : 'Distributors accept their trade\'s commitments at sign-up, and the same rules are checked again for every product.'}</p>
+      </div>
+      <div class="trust-grid" data-stagger>
+        {[
+          ['shield', fa ? 'همه‌ی صنف‌ها' : 'All trades', fa ? 'سلامت و اصالت کالا، ضمانت و بیمه‌ی مسئولیت' : 'Product safety, authenticity, guarantee and liability insurance'],
+          ['sparkle', fa ? 'مواد غذایی' : 'Food', fa ? 'تاریخ انقضای ثبت‌شده و به‌روز برای هر کالا' : 'A recorded, in-date expiry on every item'],
+          ['pill', fa ? 'دارو و سلامت' : 'Pharmacy', fa ? 'کد IRC شانزده‌رقمی و نماد سیب سلامت' : '16-digit IRC code and Iranian health seal'],
+          ['phone', fa ? 'کالای دیجیتال' : 'Electronics', fa ? 'شرکت گارانتی، مدت ضمانت و رجیستری' : 'Warranty company, term and registry'],
+        ].map(([ic, h, p], i) => (
+          <div class:list={['card', i === 0 && 'trust-main']} data-tilt>
+            <div class="icon-tile"><Icon name={ic} /></div><h3 class="h3">{h}</h3><p>{p}</p>
+          </div>
+        ))}
+        <a class="card trust-link" href={href(lang, '/trust')}>
+          <span>{fa ? 'همه‌ی تعهدات صنفی' : 'All trade commitments'}</span>
+          <span class="role-go"><Icon name="arrow" size={18} class="flip" /></span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- INTEGRATIONS -->
+  <section class="section blend" data-scene="ink">
+    <div class="wrap integ">
+      <div class="section-head">
+        <span class="eyebrow">{fa ? 'یکپارچه‌سازی' : 'Integrations'}</span>
+        <h2 class="h2" data-reveal>{fa ? 'داده‌ی شما، در هر دو جهت' : 'Your data, both ways'}</h2>
+        <p class="lead" data-reveal>{fa
+          ? 'کالا، موجودی، سفارش، فاکتور و مشتری را از نرم‌افزار انبار، حسابداری و CRM وارد نیلیکس کنید یا از نیلیکس به آن‌ها بفرستید؛ با اکسل، API یا وبهوک.'
+          : 'Bring products, stock, orders, invoices and customers in from your warehouse, accounting and CRM software, or send them back out — by Excel, API or webhook.'}</p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px">
+          <a class="btn btn-sm" href={href(lang, '/docs')}><Icon name="code" />{fa ? 'مستندات API' : 'API docs'}</a>
+          <a class="btn btn-ghost btn-sm" href={href(lang, '/integrations')}>{fa ? 'روش‌های اتصال' : 'Ways to connect'}</a>
+        </div>
+      </div>
+      <div class="orbit" data-orbit>
+        <div class="orbit-ring r1" data-orbit-ring></div>
+        <div class="orbit-ring r2"></div>
+        <div class="orbit-hub"><img src="/favicon.svg" alt="" width="84" height="84" /></div>
+        {[...SYSTEMS.map((s) => ({ icon: s.icon, label: L(lang, s.name) })), { icon: 'file', label: 'Excel / CSV' }, { icon: 'webhook', label: fa ? 'وبهوک' : 'Webhooks' }].map((n, i, arr) => (
+          <div class="orbit-node" data-orbit-node style={`--a:${(360 / arr.length) * i}deg`}>
+            <span class="glass glass-shine"><Icon name={n.icon} size={18} />{n.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- GLOBAL -->
+  <section class="section blend" data-scene="night">
+    <div class="wrap global">
+      <div>
+        <span class="eyebrow">{fa ? 'بین‌المللی' : 'International'}</span>
+        <h2 class="h2" style="margin-top:16px" data-reveal>{fa ? 'از ایران به بازارهای منطقه' : 'From Iran to regional markets'}</h2>
+        <p class="lead" style="margin-top:18px" data-reveal>{fa
+          ? 'خریدار خارجی اپ را به انگلیسی می‌بیند و فقط شرکت‌هایی را که ناوگان بین‌المللی‌شان به کشورش می‌رسد. حمل جاده‌ای، دریایی، هوایی و ریلی با اینکوترمز روشن.'
+          : 'Foreign buyers get the app in English and see only distributors whose international fleet reaches their country. Road, sea, air and rail, with clear Incoterms.'}</p>
+        <a class="btn" style="margin-top:30px" href={href(lang, '/global')}>{fa ? 'صادرات با نیلیکس' : 'Export with nilix'} <Icon name="arrow" class="flip" /></a>
+      </div>
+      <div class="globe" aria-hidden="false">
+        <svg class="globe-svg" viewBox="0 0 400 400" aria-hidden="true">
+          <circle cx="200" cy="200" r="170" fill="#d0051f" />
+          <g fill="none" stroke="#070709" stroke-width="2" opacity=".35">
+            <ellipse cx="200" cy="200" rx="170" ry="60" /><ellipse cx="200" cy="200" rx="170" ry="120" />
+            <ellipse cx="200" cy="200" rx="60" ry="170" /><ellipse cx="200" cy="200" rx="120" ry="170" />
+            <path d="M30 200h340M200 30v340" />
+          </g>
+        </svg>
+        <div class="modes" data-stagger>
+          {[
+            ['truck', fa ? 'جاده‌ای' : 'Road', 'CMR · TIR'],
+            ['ship', fa ? 'دریایی' : 'Sea', 'FOB · CIF'],
+            ['plane', fa ? 'هوایی' : 'Air', 'CPT · CIP'],
+            ['layers', fa ? 'ریلی' : 'Rail', 'FCA · DAP'],
+          ].map(([ic, h, s]) => <div class="mode glass glass-shine"><Icon name={ic} size={26} /><b>{h}</b><small class="ltr">{s}</small></div>)}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BLOG -->
+  {latest.length > 0 && (
+    <section class="section blend" data-scene="paper">
+      <div class="wrap">
+        <div class="blog-head">
+          <div style="display:grid;gap:14px"><span class="eyebrow">{fa ? 'مقالات' : 'From the blog'}</span><h2 class="h2">{fa ? 'دانستنی‌های پخش و خرید عمده' : 'Wholesale & distribution, explained'}</h2></div>
+          <a class="btn btn-ghost btn-sm" href={href(lang, '/blog')}>{fa ? 'همه‌ی مقالات' : 'All articles'}</a>
+        </div>
+        <div class="posts" data-stagger>
+          {latest.map((p, i) => (
+            <a class:list={['card post-card', i === 0 && 'first']} href={postPath(p)} data-tilt>
+              <span class="chip">{p.data.category}</span>
+              <h3 class="h3">{p.data.title}</h3>
+              <p>{p.data.description}</p>
+              <span class="post-foot"><time datetime={p.data.date.toISOString()}>{formatDate(lang, p.data.date)}</time><span class="role-go"><Icon name="arrow" size={16} class="flip" /></span></span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- FAQ -->
+  <section class="section blend" data-scene="paper" style="padding-top:0">
+    <div class="wrap faq-wrap">
+      <div class="section-head">
+        <span class="eyebrow">{fa ? 'سؤالات متداول' : 'FAQ'}</span>
+        <h2 class="h2">{fa ? 'پرسش‌های رایج' : 'Common questions'}</h2>
+        <a class="btn btn-ghost btn-sm" style="justify-self:start" href={href(lang, '/faq')}>{fa ? 'همه‌ی پرسش‌ها' : 'All questions'}</a>
+      </div>
+      <Faq lang={lang} items={HOME_FAQ} />
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section blend" data-scene="paper" style="padding-top:0" id="download">
+    <div class="wrap">
+      <div class="cta" data-reveal="scale">
+        <div>
+          <h2 class="h2">{t(lang, 'ctaTitle')}</h2>
+          <p class="lead" style="margin-top:16px">{t(lang, 'ctaText')}</p>
+          <div style="margin-top:30px"><Downloads lang={lang} /></div>
+        </div>
+        <div class="cta-phones" aria-hidden="true">
+          <Phone width={210} class="cp1"><Screen kind="product" lang={lang} /></Phone>
+          <Phone width={210} class="cp2"><Screen kind="delivered" lang={lang} /></Phone>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* ---------- hero ---------- */
+  .hero { min-height: 100svh; padding-top: 110px; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+  .hero-bg { position: absolute; inset: 0; pointer-events: none; }
+  .hero-n { position: absolute; width: 118%; max-width: 680px; top: 50%; left: 50%; translate: -50% -50%; overflow: visible; z-index: 0; }
+  html[dir='rtl'] .hero-n { scale: -1 1; }
+  .hero-n path { stroke-dasharray: 1; stroke-dashoffset: 0; }
+  html.motion .hero-n path { stroke-dashoffset: 1; animation: draw 2.2s 0.2s var(--ease) forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .hero-dot { position: absolute; z-index: 0; width: 15%; max-width: 92px; aspect-ratio: 1; border-radius: 50%; background: var(--fg); top: 3%; inset-inline-end: 2%; }
+  html.motion .hero-dot { scale: 0; animation: pop 1s 1.7s var(--ease) forwards; }
+  @keyframes pop { to { scale: 1; } }
+  .hero-ring { position: absolute; width: clamp(300px, 40vw, 560px); aspect-ratio: 1; border-radius: 50%; border: 1px solid rgba(255,255,255,.08); bottom: -18%; inset-inline-start: -12%; }
+
+  .hero-grid { display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 30px; align-items: center; flex: 1; position: relative; z-index: 1; }
+  .live { display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; border-radius: 99px; font-size: .84rem; font-weight: 700; }
+  .live i { width: 8px; height: 8px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 4px rgba(208,5,31,.25); animation: blink 1.6s infinite; }
+  @keyframes blink { 50% { box-shadow: 0 0 0 7px rgba(208,5,31,0); } }
+  .hero-title { margin-top: 22px; font-size: clamp(2.6rem, 5.6vw, 5.4rem); }
+  .hero-title .line { display: block; overflow: hidden; padding-bottom: .06em; }
+  .hero-title .line > span { display: inline-block; }
+  .hero-title em { font-style: normal; color: var(--red); }
+  .hero .lead { margin-top: 20px; }
+  .hero-dl :global(.store) { min-height: 56px; }
+  .hero-dl { margin-top: 30px; }
+
+  .hero-stage { position: relative; display: grid; place-items: center; min-height: 640px; perspective: 1400px; }
+  .stage-phone { transform-style: preserve-3d; position: relative; z-index: 1; }
+  .chip-f { position: absolute; z-index: 2; display: flex; align-items: center; gap: 12px; padding: 12px 18px 12px 12px; border-radius: 20px; font-size: .86rem; }
+  html[dir='rtl'] .chip-f { padding: 12px 12px 12px 18px; }
+  .chip-f b { display: block; line-height: 1.35; }
+  .chip-f small { color: var(--muted); font-size: .76rem; }
+  .cf-ic { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: var(--red); color: #fff; flex: none; }
+  .cf-ic.dark { background: var(--fg); color: var(--bg); }
+  .cf1 { top: 36%; inset-inline-end: -2%; }
+  .cf2 { top: 16%; inset-inline-start: -8%; }
+  .tracker { position: absolute; z-index: 2; bottom: 5%; inset-inline-start: -6%; padding: 14px; border-radius: 22px; width: 290px; }
+  .tr-head { display: flex; justify-content: space-between; align-items: center; font-size: .86rem; margin-bottom: 12px; }
+  .tr-live { display: inline-flex; align-items: center; gap: 6px; font-size: .72rem; font-weight: 800; color: var(--red); }
+  .tr-live i { width: 6px; height: 6px; border-radius: 50%; background: var(--red); animation: blink 1.6s infinite; }
+  .tracker ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; position: relative; }
+  .tracker li { display: grid; justify-items: center; gap: 6px; text-align: center; }
+  .tracker li span { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; background: var(--card-2); color: var(--muted); transition: background-color .4s, color .4s, transform .5s var(--ease); }
+  .tracker li small { font-size: .66rem; color: var(--muted); font-weight: 700; line-height: 1.3; }
+  .tracker li:global(.done) span { background: var(--fg); color: var(--bg); }
+  .tracker li:global(.on) span { background: var(--red); color: #fff; transform: scale(1.12); }
+  .tracker li:global(.on) small { color: var(--fg); }
+
+  .marquee { position: relative; z-index: 1; margin-top: 40px; border-top: 1px solid var(--line); overflow: hidden; padding-block: 20px; }
+  .marquee-track { display: flex; width: max-content; }
+  .marquee-track span { display: inline-flex; align-items: center; gap: 30px; padding-inline-end: 30px; font-size: clamp(1.1rem, 2vw, 1.5rem); font-weight: 800; color: var(--muted); white-space: nowrap; }
+  .marquee-track i { width: 9px; height: 9px; background: var(--red); rotate: 45deg; border-radius: 2px; }
+  html:not(.motion) .marquee-track { flex-wrap: wrap; width: auto; justify-content: center; }
+  html:not(.motion) .marquee-track span:nth-child(n + 13) { display: none; }
+
+  @media (max-width: 980px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .hero-stage { min-height: 600px; margin-top: 20px; }
+    .cf1 { inset-inline-end: 0; } .cf2 { inset-inline-start: 0; } .tracker { inset-inline-start: 50%; translate: -50% 0; }
+    html[dir='rtl'] .tracker { translate: 50% 0; }
+  }
+  @media (max-width: 520px) { .chip-f { display: none; } .tracker { width: 92%; } }
+
+  /* ---------- statement ---------- */
+  .statement { font-size: clamp(1.8rem, 4.2vw, 3.6rem); font-weight: 850; line-height: 1.45; margin: 26px 0 0; max-width: 26ch; }
+  html[lang='en'] .statement { line-height: 1.2; letter-spacing: -0.03em; }
+  html.motion .statement span { opacity: .14; }
+  .pains { margin-top: 80px; }
+
+  /* ---------- roles ---------- */
+  .roles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .role {
+    position: relative; overflow: hidden; text-decoration: none; display: flex; flex-direction: column; gap: 10px;
+    border-radius: 30px; padding: 30px; background: #fff; color: var(--fg);
+    box-shadow: inset 0 0 0 1px var(--line); transition: transform .6s var(--ease), box-shadow .4s;
+  }
+  .role:hover { box-shadow: inset 0 0 0 2px var(--red); }
+  .role.big { min-height: 460px; padding-inline-end: 230px; }
+  .role.dark { background: var(--ink); color: #f5f3f1; --fg: #f5f3f1; --muted: #8e8b93; --card-2: rgba(255,255,255,.08); --line: rgba(255,255,255,.1); --rim: rgba(255,255,255,.3); }
+  .role p { color: var(--muted); margin: 0 0 8px; }
+  .role .chips { margin-top: auto; }
+  .role-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .role-top .icon-tile { margin-bottom: 10px; }
+  .role-go { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: var(--card-2); transition: background-color .3s, color .3s, rotate .5s var(--ease); flex: none; }
+  .role:hover .role-go, .card:hover .role-go { background: var(--red); color: #fff; rotate: -45deg; }
+  html[dir='rtl'] .role:hover .role-go, html[dir='rtl'] .card:hover .role-go { rotate: 45deg; }
+  .role-phone { position: absolute; inset-inline-end: 26px; bottom: -120px; rotate: 6deg; transition: translate .7s var(--ease), rotate .7s var(--ease); }
+  html[dir='rtl'] .role-phone { rotate: -6deg; }
+  .role:hover .role-phone { translate: 0 -24px; rotate: 0deg; }
+  @media (max-width: 900px) {
+    .roles { grid-template-columns: 1fr; }
+    .role.big { padding-inline-end: 30px; min-height: 0; padding-bottom: 300px; }
+    .role-phone { inset-inline-end: 50%; translate: 50% 0; }
+    html[dir='rtl'] .role-phone { translate: -50% 0; }
+    .role:hover .role-phone { translate: 50% -20px; }
+  }
+
+  /* ---------- story ---------- */
+  .story-grid { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 60px; }
+  .story-pin { position: sticky; top: 0; height: 100vh; display: flex; align-items: center; justify-content: center; gap: 26px; }
+  .story-disc { position: absolute; width: 380px; aspect-ratio: 1; border-radius: 50%; background: var(--red); top: 50%; left: 50%; translate: -50% -50%; }
+  .story-phone { position: relative; z-index: 1; will-change: transform; }
+  .story-screen { opacity: 0; transition: opacity .6s var(--ease), transform .8s var(--ease); transform: scale(1.04); }
+  .story-screen:global(.on) { opacity: 1; transform: none; }
+  .story-dots { display: grid; gap: 10px; position: relative; z-index: 1; }
+  .story-dots i { width: 5px; height: 28px; border-radius: 9px; background: var(--line); transition: background-color .4s; }
+  .story-dots i:global(.on) { background: var(--red); }
+  .story-steps { padding-block: 10vh 20vh; }
+  .story-step { min-height: 70vh; display: flex; flex-direction: column; justify-content: center; gap: 14px; opacity: .25; transition: opacity .5s; }
+  .story-step:global(.on) { opacity: 1; }
+  .story-n { font-weight: 800; color: var(--red); font-size: .9rem; }
+  .story-step .h3 { font-size: clamp(1.7rem, 3.2vw, 2.6rem); }
+  .story-step p { font-size: 1.1rem; max-width: 44ch; margin: 0; }
+  .story-mobile-phone { display: none; }
+  html:not(.motion) .story-step { opacity: 1; }
+  @media (max-width: 899px) {
+    .story-grid { grid-template-columns: 1fr; }
+    .story-pin { display: none; }
+    .story-steps { padding: 0; display: grid; gap: 80px; }
+    .story-step { min-height: 0; opacity: 1; }
+    .story-mobile-phone { display: flex; justify-content: center; margin-bottom: 18px; }
+  }
+
+  /* ---------- journey (on red) ---------- */
+  .journey { min-height: 100vh; padding: 120px 0 80px; overflow: hidden; display: flex; flex-direction: column; justify-content: center; position: relative; }
+  .journey-disc { position: absolute; width: 70vmax; aspect-ratio: 1; border-radius: 50%; background: var(--red); inset-inline-end: -30vmax; top: -30vmax; }
+  .journey > :not(.journey-disc) { position: relative; z-index: 1; }
+  .journey-head { display: flex; flex-wrap: wrap; align-items: end; gap: 18px 30px; justify-content: space-between; }
+  .journey-rail { position: relative; height: 44px; margin: 50px var(--gutter) 14px; }
+  .rail-line { position: absolute; inset: 50% 0 auto; height: 2px; background: rgba(255,255,255,.25); overflow: hidden; }
+  .rail-line i { position: absolute; inset: 0; background: #fff; transform-origin: right; transform: scaleX(1); }
+  html[dir='ltr'] .rail-line i { transform-origin: left; }
+  .rail-mover { position: absolute; top: 50%; translate: -50% -50%; width: 46px; height: 46px; border-radius: 50%; background: #fff; color: var(--red); display: grid; place-items: center; left: 0; }
+  html[dir='rtl'] .rail-mover :global(svg) { scale: -1 1; }
+  html:not(.motion) .journey-rail { display: none; }
+  .journey-track { list-style: none; margin: 20px 0 0; padding: 0 var(--gutter); display: flex; gap: 16px; width: max-content; }
+  .jcard { width: 330px; flex: none; border-radius: 28px; padding: 26px; display: flex; flex-direction: column; }
+  .jcard p { color: var(--muted); margin: 10px 0 0; }
+  .jtop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+  .jnum { font-size: 3.2rem; font-weight: 900; line-height: 1; color: #fff; }
+  .jic { width: 48px; height: 48px; border-radius: 16px; background: #fff; color: var(--red-deep); display: grid; place-items: center; }
+  .jwho { font-size: .8rem; font-weight: 800; opacity: .8; margin-bottom: 4px; }
+  @media (max-width: 899px) {
+    .journey-track { width: auto; flex-direction: column; padding: 0; margin-inline: var(--gutter); }
+    .jcard { width: auto; }
+    .journey-rail { display: none; }
+  }
+
+  /* ---------- trust ---------- */
+  .trust-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr; grid-auto-rows: minmax(200px, auto); gap: 16px; }
+  .trust-main { grid-row: span 2; background: var(--ink) !important; color: #f5f3f1; --fg: #f5f3f1; --muted: #8e8b93; --card-2: rgba(255,255,255,.1); --rim: rgba(255,255,255,.3); --line: rgba(255,255,255,.1); display: flex; flex-direction: column; justify-content: flex-end; }
+  .trust-main .h3 { font-size: 2rem; }
+  .trust-main .icon-tile { background: var(--red); color: #fff; width: 70px; height: 70px; margin-bottom: auto; }
+  .trust-link { display: flex; justify-content: space-between; align-items: center; text-decoration: none; font-weight: 800; font-size: 1.1rem; background: var(--red) !important; color: #fff; --card-2: rgba(255,255,255,.2); }
+  @media (max-width: 900px) { .trust-grid { grid-template-columns: 1fr; } .trust-main { grid-row: auto; min-height: 280px; } .trust-link { grid-column: auto; } }
+
+  /* ---------- orbit ---------- */
+  .integ { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+  .orbit { position: relative; aspect-ratio: 1; width: min(540px, 100%); margin-inline: auto; }
+  .orbit-ring { position: absolute; border-radius: 50%; border: 1px dashed rgba(255,255,255,.18); }
+  .orbit-ring.r1 { inset: 9%; }
+  .orbit-ring.r2 { inset: 27%; border-style: solid; border-color: rgba(255,255,255,.06); }
+  .orbit-hub { position: absolute; inset: 36%; border-radius: 50%; background: var(--red); display: grid; place-items: center; box-shadow: 0 0 0 14px rgba(208,5,31,.12), 0 0 0 28px rgba(208,5,31,.06); }
+  .orbit-hub img { width: 56%; border-radius: 26%; box-shadow: 0 0 0 3px #fff; }
+  .orbit-node { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform: rotate(var(--a)) translateY(calc(min(540px, 90vw) * -0.41)) rotate(calc(-1 * var(--a))); }
+  .orbit-node span { position: absolute; translate: -50% -50%; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; padding: 10px 14px; border-radius: 99px; font-weight: 750; font-size: 0.86rem; }
+  .orbit-node :global(svg) { color: var(--red); }
+  @media (max-width: 900px) { .integ { grid-template-columns: 1fr; } .orbit-node span { font-size: .74rem; padding: 7px 10px; } }
+
+  /* ---------- global ---------- */
+  .global { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: center; }
+  .globe { position: relative; display: grid; place-items: center; }
+  .globe-svg { width: min(460px, 100%); }
+  html.motion .globe-svg g { animation: spin 40s linear infinite; transform-origin: 200px 200px; }
+  @keyframes spin { to { rotate: 360deg; } }
+  .modes { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; place-content: center; padding: 0 6%; }
+  .mode { border-radius: 24px; padding: 20px; display: grid; gap: 4px; }
+  .mode :global(svg) { color: var(--fg); }
+  .mode b { font-size: 1.25rem; }
+  .mode small { color: var(--muted); justify-self: start; }
+  @media (max-width: 900px) { .global { grid-template-columns: 1fr; } }
+
+  /* ---------- blog ---------- */
+  .blog-head { display: flex; justify-content: space-between; align-items: end; gap: 20px; flex-wrap: wrap; margin-bottom: 50px; }
+  .posts { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 16px; }
+  .post-card { text-decoration: none; display: flex; flex-direction: column; gap: 14px; min-height: 300px; background: #fff; }
+  .post-card.first { background: var(--ink); color: #f5f3f1; --fg: #f5f3f1; --muted: #8e8b93; --card-2: rgba(255,255,255,.1); --line: rgba(255,255,255,.1); }
+  .post-card.first .h3 { font-size: 1.7rem; }
+  .post-card .chip { align-self: flex-start; }
+  .post-card p { margin: 0; }
+  .post-foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: .86rem; }
+  @media (max-width: 900px) { .posts { grid-template-columns: 1fr; } }
+
+  .faq-wrap { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 40px; align-items: start; }
+  @media (max-width: 900px) { .faq-wrap { grid-template-columns: 1fr; } }
+
+  .cta-phones { position: relative; height: 440px; }
+  .cta-phones :global(.cp1) { position: absolute; inset-inline-start: 4%; top: 0; rotate: -7deg; }
+  .cta-phones :global(.cp2) { position: absolute; inset-inline-end: 4%; top: 46px; rotate: 6deg; }
+  @media (max-width: 900px) { .cta-phones { display: none; } }
+</style>

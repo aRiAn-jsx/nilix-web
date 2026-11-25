@@ -1,0 +1,112 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import Phone from '../components/Phone.astro';
+import Screen from '../components/Screen.astro';
+import PageHero from '../components/PageHero.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { JOURNEY } from '../data/content';
+import { type Lang, L, num } from '../i18n/ui';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const fa = lang === 'fa';
+const title = fa ? 'روند سفارش عمده در نیلیکس؛ از انتخاب کالا تا تسویه' : 'How a wholesale order works on nilix, from cart to payment';
+const description = fa
+  ? 'یک سفارش عمده در نیلیکس چطور پیش می‌رود: انتخاب کالا، پیش‌فاکتور، تأیید شرکت پخش، فاکتور رسمی، بسته‌بندی، حمل با راننده، تحویل با QR، پرداخت و حسابداری.'
+  : 'How a nilix wholesale order moves: choosing goods, pro-forma, distributor confirmation, official invoice, packing, driver transit, QR handover, payment and bookkeeping.';
+
+const howTo = {
+  '@context': 'https://schema.org',
+  '@type': 'HowTo',
+  name: title,
+  description,
+  inLanguage: fa ? 'fa-IR' : 'en',
+  step: JOURNEY.map((s) => ({ '@type': 'HowToStep', position: s.n, name: L(lang, s.title), text: L(lang, s.text) })),
+};
+
+const statuses = [
+  { tone: '#f43f5e', t: { fa: 'ثبت پیش‌فاکتور', en: 'Pro-forma submitted' }, d: { fa: 'خریدار سبد را فرستاده؛ شرکت پخش در حال بررسی است.', en: 'The buyer sent the cart; the distributor is reviewing it.' } },
+  { tone: '#f59e0b', t: { fa: 'در حال بسته‌بندی', en: 'Packing' }, d: { fa: 'تعدادها تأیید و فاکتور رسمی صادر شده؛ انبار کارتن‌ها را آماده می‌کند.', en: 'Quantities are confirmed and invoiced; the warehouse is preparing the cartons.' } },
+  { tone: '#38bdf8', t: { fa: 'بارگیری و در مسیر', en: 'Loaded, in transit' }, d: { fa: 'بار تحویل راننده شده و در راه مغازه است.', en: 'The load is with a driver and on its way.' } },
+  { tone: '#10b981', t: { fa: 'تحویل‌شده', en: 'Delivered' }, d: { fa: 'QR اسکن شده، کد تحویل تأیید شده و پرداخت ثبت شده است.', en: 'QR scanned, delivery code confirmed and payment recorded.' } },
+];
+---
+<Base lang={lang} title={title} description={description} path="/how-it-works" jsonLd={[howTo]}>
+  <PageHero lang={lang} eyebrow={fa ? 'روند سفارش' : 'How it works'}
+    title={fa ? 'یک سفارش، از صفر تا صد' : 'One order, start to finish'}
+    lead={fa ? 'بدون اصطلاح فنی: هر مرحله چه کسی کاری انجام می‌دهد و بقیه چه می‌بینند.' : 'No jargon: who does what at each step, and what everyone else sees.'}
+    crumbs={[[fa ? 'روند سفارش' : 'How it works']]} />
+
+  <section class="section blend" data-scene="night" data-story style="padding-top:40px">
+    <div class="wrap flow">
+      <div class="flow-pin">
+        <div data-story-phone>
+          <Phone width={290}>
+            {JOURNEY.map((s) => <div class="story-screen" data-story-screen><Screen kind={s.screen} lang={lang} /></div>)}
+          </Phone>
+        </div>
+      </div>
+      <ol class="flow-steps">
+        {JOURNEY.map((s) => (
+          <li class="flow-step" data-story-step>
+            <div class="flow-mark"><span>{num(lang, s.n)}</span></div>
+            <div class="flow-body">
+              <div class="flow-mobile"><Phone width={220}><Screen kind={s.screen} lang={lang} /></Phone></div>
+              <span class="jwho"><Icon name={s.icon} size={16} />{L(lang, s.who)}</span>
+              <h2 class="h3">{L(lang, s.title)}</h2>
+              <p>{L(lang, s.text)}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section blend" data-scene="paper">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">{fa ? 'وضعیت‌های سفارش' : 'Order statuses'}</span>
+        <h2 class="h2" data-reveal>{fa ? 'همه همیشه می‌دانند سفارش کجاست' : 'Everyone always knows where the order is'}</h2>
+        <p class="lead" data-reveal>{fa ? 'هر سفارش در یکی از این چهار وضعیت است و با هر تغییر، اعلان و پیامک ارسال می‌شود.' : 'Every order sits in one of these four states, and each change sends a notification and SMS.'}</p>
+      </div>
+      <div class="grid g4" data-stagger>
+        {statuses.map((s, i) => (
+          <div class="card status" style={`--tile:${s.tone}`}>
+            <span class="status-n">{num(lang, i + 1)}</span>
+            <h3 class="h3">{L(lang, s.t)}</h3>
+            <p>{L(lang, s.d)}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+  <CtaBand lang={lang} />
+</Base>
+
+<style>
+  .flow { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 60px; }
+  .flow-pin { position: sticky; top: 0; height: 100vh; display: grid; place-items: center; }
+  .flow-steps { list-style: none; margin: 0; padding: 10vh 0 20vh; position: relative; }
+  .flow-steps::before { content: ''; position: absolute; inset-block: 0; inset-inline-start: 23px; width: 2px; background: var(--line); }
+  .flow-step { display: flex; gap: 26px; min-height: 62vh; align-items: center; opacity: .35; transition: opacity .5s; position: relative; }
+  .flow-step:global(.on) { opacity: 1; }
+  .flow-mark { flex: none; width: 48px; height: 48px; border-radius: 16px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); display: grid; place-items: center; font-weight: 900; font-size: 1.1rem; transition: background .4s, color .4s; }
+  .flow-step:global(.on) .flow-mark { background: var(--gold); color: #1a1406; }
+  .flow-body p { color: var(--muted); font-size: 1.12rem; max-width: 44ch; margin: 10px 0 0; }
+  .flow-body .h3 { font-size: clamp(1.6rem, 3vw, 2.3rem); margin-top: 6px; }
+  .jwho { display: inline-flex; gap: 6px; align-items: center; font-weight: 800; color: var(--accent); font-size: .9rem; }
+  .flow-mobile { display: none; }
+  .story-screen { opacity: 0; transition: opacity .6s var(--ease); }
+  .story-screen:global(.on) { opacity: 1; }
+  html:not(.motion) .flow-step { opacity: 1; }
+  @media (max-width: 899px) {
+    .flow { grid-template-columns: 1fr; }
+    .flow-pin { display: none; }
+    .flow-steps { padding: 0; display: grid; gap: 60px; }
+    .flow-step { min-height: 0; opacity: 1; align-items: flex-start; }
+    .flow-mobile { display: flex; margin-bottom: 18px; }
+  }
+  .status { border-top: 4px solid var(--tile); }
+  .status-n { font-size: 2.4rem; font-weight: 900; color: var(--tile); line-height: 1; display: block; margin-bottom: 14px; }
+</style>

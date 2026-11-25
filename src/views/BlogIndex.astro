@@ -1,0 +1,63 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import { posts, postPath, readingMinutes } from '../lib/blog';
+import { type Lang, formatDate, num, t } from '../i18n/ui';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const fa = lang === 'fa';
+const list = await posts(lang);
+const cats = [...new Set(list.map((p) => p.data.category))];
+const title = fa ? 'مقالات نیلیکس؛ راهنمای خرید عمده و پخش مویرگی' : 'nilix blog: guides to wholesale buying and distribution';
+const description = fa
+  ? 'مقاله‌های کاربردی درباره‌ی خرید عمده، پخش مویرگی، فاکتور رسمی و مالیات، سیب سلامت و IRC، حسابداری شرکت پخش و صادرات برای فروشگاه‌ها و شرکت‌های پخش.'
+  : 'Practical articles on wholesale buying, distribution, invoicing, product compliance, distributor accounting and exporting from Iran.';
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'Blog',
+  name: fa ? 'مقالات نیلیکس' : 'nilix blog',
+  inLanguage: fa ? 'fa-IR' : 'en',
+  blogPost: list.map((p) => ({ '@type': 'BlogPosting', headline: p.data.title, url: `https://nilix.co${postPath(p)}`, datePublished: p.data.date.toISOString() })),
+};
+---
+<Base lang={lang} title={title} description={description} path="/blog" jsonLd={[ld]}>
+  <PageHero lang={lang} eyebrow={fa ? 'مقالات' : 'Blog'}
+    title={fa ? 'دانستنی‌های پخش و خرید عمده' : 'Wholesale & distribution, explained'}
+    lead={fa ? 'راهنماهای کوتاه و کاربردی برای فروشگاه‌داران، شرکت‌های پخش و صادرکنندگان.' : 'Short, practical guides for store owners, distributors and exporters.'}
+    crumbs={[[fa ? 'مقالات' : 'Blog']]}>
+    {cats.length > 1 && <div class="chips" style="margin-top:28px">{cats.map((c) => <a class="chip" style="text-decoration:none" href={`#${encodeURIComponent(c)}`}>{c}</a>)}</div>}
+  </PageHero>
+  <section class="section blend" data-scene="paper" style="padding-top:60px">
+    <div class="wrap">
+      {list.length === 0 && <p class="muted">{fa ? 'به‌زودی…' : 'Coming soon…'}</p>}
+      {cats.map((c) => (
+        <div class="cat" id={c}>
+          <h2 class="h3">{c}</h2>
+          <div class="grid g3" data-stagger>
+            {list.filter((p) => p.data.category === c).map((p) => (
+              <a class="card post" href={postPath(p)}>
+                <h3 class="h3">{p.data.title}</h3>
+                <p>{p.data.description}</p>
+                <span class="meta">
+                  <time datetime={p.data.date.toISOString()}>{formatDate(lang, p.data.date)}</time>
+                  <span>·</span>
+                  <span>{num(lang, readingMinutes(p.body))} {t(lang, 'minutes')}</span>
+                </span>
+              </a>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .cat + .cat { margin-top: 60px; }
+  .cat .h3 { margin-bottom: 18px; }
+  .post { text-decoration: none; display: flex; flex-direction: column; gap: 10px; transition: transform .4s var(--ease), box-shadow .3s; }
+  .post:hover { transform: translateY(-4px); box-shadow: inset 0 0 0 1.5px var(--rose-2); }
+  .post p { margin: 0; flex: 1; }
+  .meta { display: flex; gap: 8px; color: var(--muted); font-size: .86rem; }
+</style>

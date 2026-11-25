@@ -1,0 +1,41 @@
+---
+import Icon from './Icon.astro';
+import { SITE } from '../data/site';
+import { type Lang, FOOTER, href, t } from '../i18n/ui';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const c = SITE.contact;
+const year = new Date().getFullYear();
+---
+<footer class="ftr" data-scene="ink">
+  <div class="wrap">
+    <div class="ftr-top">
+      <div class="ftr-about">
+        <a class="logo" href={href(lang, '/')}><img src="/favicon.svg" alt="" width="38" height="38" /><span>{lang === 'fa' ? 'نیلیکس' : 'nilix'}</span></a>
+        <p>{t(lang, 'footerAbout')}</p>
+        <address class="ftr-contact" style="font-style:normal">
+          <a href={`tel:${c.phoneIntl}`} class="ltr" style="justify-self:start">{lang === 'fa' ? c.phoneFa : c.phoneEn}</a>
+          <a href={`mailto:${c.email}`} class="ltr" style="justify-self:start">{c.email}</a>
+          <span>{lang === 'fa' ? c.addressFa : c.addressEn}</span>
+        </address>
+      </div>
+      {FOOTER.map((col) => (
+        <nav aria-label={col[lang]}>
+          <h3>{col[lang]}</h3>
+          <ul>
+            {col.links.map((l) => <li><a href={href(lang, l.path)}>{l[lang]}</a></li>)}
+          </ul>
+        </nav>
+      ))}
+    </div>
+    <div class="ftr-bottom">
+      <span>© {lang === 'fa' ? new Intl.NumberFormat('fa-IR', { useGrouping: false }).format(year) : year} nilix. {t(lang, 'rights')}</span>
+      <span style="display:flex;gap:16px;flex-wrap:wrap">
+        <a href={SITE.webApp} style="text-decoration:none;display:inline-flex;gap:6px;align-items:center">{t(lang, 'openApp')} <Icon name="external" size={15} /></a>
+        <a href={href(lang === 'fa' ? 'en' : 'fa', '/')} style="text-decoration:none" lang={lang === 'fa' ? 'en' : 'fa'}>{t(lang, 'langSwitch')}</a>
+      </span>
+    </div>
+    <div class="ftr-word" aria-hidden="true">nilix</div>
+  </div>
+</footer>

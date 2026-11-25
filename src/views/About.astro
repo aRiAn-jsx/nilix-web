@@ -1,0 +1,91 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import PageHero from '../components/PageHero.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { SITE } from '../data/site';
+import { type Lang, L, href } from '../i18n/ui';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const fa = lang === 'fa';
+const title = fa ? 'درباره نیلیکس' : 'About nilix';
+const description = fa
+  ? 'نیلیکس با هدف شفاف و ساده کردن خرید عمده ساخته شده است: یک جریان واحد برای فروشگاه، شرکت پخش، راننده و حسابداری. داستان، مأموریت و ارزش‌های ما.'
+  : 'nilix was built to make wholesale clear and simple: one flow for stores, distributors, drivers and accounting. Our story, mission and values.';
+
+const values = [
+  { icon: 'sparkle', t: { fa: 'سادگی', en: 'Simplicity' }, d: { fa: 'فروشگاه‌دار و راننده باید بدون آموزش با اپ کار کنند. هر صفحه یک کار اصلی دارد.', en: 'Store owners and drivers should use the app without training. Every screen has one main job.' } },
+  { icon: 'shield', t: { fa: 'شفافیت', en: 'Transparency' }, d: { fa: 'قیمت، تعداد، تخفیف و مالیات قبل از هر تصمیم جلوی چشم همه است.', en: 'Price, quantity, discount and tax are in front of everyone before any decision.' } },
+  { icon: 'handshake', t: { fa: 'انصاف', en: 'Fairness' }, d: { fa: 'شرکت پخش کوچک و بزرگ در یک ویترین کنار هم دیده می‌شوند و امتیاز واقعی خریداران ملاک است.', en: 'Small and large distributors sit side by side, judged by real buyer ratings.' } },
+  { icon: 'plug', t: { fa: 'باز بودن', en: 'Openness' }, d: { fa: 'داده متعلق به کسب‌وکار شماست؛ با اکسل و API هر وقت خواستید آن را ببرید.', en: 'Your data belongs to your business; take it out by Excel or API whenever you like.' } },
+];
+const org = {
+  '@context': 'https://schema.org',
+  '@type': 'AboutPage',
+  name: title,
+  description,
+  about: { '@id': `${SITE.url}/#org` },
+  inLanguage: fa ? 'fa-IR' : 'en',
+};
+---
+<Base lang={lang} title={title} description={description} path="/about" jsonLd={[org]}>
+  <PageHero lang={lang} eyebrow={fa ? 'درباره ما' : 'About us'}
+    title={fa ? 'ما خرید عمده را از دفترچه بیرون آوردیم' : 'We took wholesale out of the notebook'}
+    lead={fa ? 'نیلیکس از مشهد شروع شده و برای همه‌ی زنجیره‌ی پخش ساخته می‌شود؛ از بنکدار محله تا شرکت پخش سراسری و صادرکننده.' : 'nilix started in Mashhad and is built for the whole distribution chain — from the neighbourhood wholesaler to national distributors and exporters.'}
+    crumbs={[[fa ? 'درباره ما' : 'About']]} />
+
+  <section class="section blend" data-scene="paper">
+    <div class="wrap story">
+      <h2 class="h2" data-reveal>{fa ? 'داستان ما' : 'Our story'}</h2>
+      <div class="prose" data-reveal>
+        {fa ? (
+          <>
+            <p>خرید عمده در ایران هنوز بیشتر با تلفن، ویزیتور و دفترچه انجام می‌شود. فروشگاه‌دار برای مقایسه‌ی قیمت باید با چند نفر تماس بگیرد، شرکت پخش سفارش‌ها را دستی جمع می‌کند و اختلاف سر تعداد کارتن یا مبلغ فاکتور بعد از تحویل تمام نمی‌شود.</p>
+            <p>نیلیکس را ساختیم تا این مسیر یک جریان واحد و شفاف شود: فروشگاه سفارش می‌دهد، شرکت پخش تأیید می‌کند، راننده می‌برد، QR تحویل را ثبت می‌کند و حسابداری خودش به‌روز می‌شود. همه یک نسخه از حقیقت را می‌بینند.</p>
+            <p>امروز نیلیکس به فارسی و انگلیسی کار می‌کند و خریداران خارج از ایران هم می‌توانند از شرکت‌هایی که ناوگان بین‌المللی دارند خرید کنند.</p>
+          </>
+        ) : (
+          <>
+            <p>Wholesale in Iran still runs mostly on phone calls, sales reps and notebooks. A store owner has to call several people to compare prices, distributors collect orders by hand, and arguments over carton counts or invoice totals carry on long after delivery.</p>
+            <p>We built nilix to turn that into one clear flow: the store orders, the distributor confirms, the driver delivers, a QR scan records the handover and the books update themselves. Everyone sees the same version of the truth.</p>
+            <p>Today nilix works in Persian and English, and buyers outside Iran can order from distributors that run international fleets.</p>
+          </>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <section class="section blend" data-scene="rose">
+    <div class="wrap mission">
+      <span class="eyebrow" style="background:rgba(255,255,255,.16);color:#fff">{fa ? 'مأموریت' : 'Mission'}</span>
+      <p class="mission-text" data-reveal>{fa ? 'هر فروشگاه، به هر شرکت پخشی، با یک لمس؛ بدون کاغذ، بدون ابهام.' : 'Every store, every distributor, one tap away — no paper, no doubt.'}</p>
+    </div>
+  </section>
+
+  <section class="section blend" data-scene="paper">
+    <div class="wrap">
+      <div class="section-head"><span class="eyebrow">{fa ? 'ارزش‌ها' : 'Values'}</span><h2 class="h2" data-reveal>{fa ? 'چیزهایی که برایشان کوتاه نمی‌آییم' : 'What we will not compromise on'}</h2></div>
+      <div class="grid g4" data-stagger>
+        {values.map((v) => <div class="card"><div class="icon-tile"><Icon name={v.icon} /></div><h3 class="h3">{L(lang, v.t)}</h3><p>{L(lang, v.d)}</p></div>)}
+      </div>
+      <div class="card office" data-reveal>
+        <div>
+          <h2 class="h3">{fa ? 'دفتر نیلیکس' : 'nilix office'}</h2>
+          <p>{fa ? SITE.contact.addressFa : SITE.contact.addressEn}</p>
+          <p>{fa ? SITE.contact.hoursFa : SITE.contact.hoursEn}</p>
+        </div>
+        <a class="btn" href={href(lang, '/contact')}>{fa ? 'تماس با ما' : 'Contact us'}</a>
+      </div>
+    </div>
+  </section>
+  <CtaBand lang={lang} />
+</Base>
+
+<style>
+  .story { display: grid; grid-template-columns: 0.7fr 1.3fr; gap: 40px; }
+  .mission { text-align: center; display: grid; justify-items: center; gap: 30px; }
+  .mission-text { font-size: clamp(2rem, 5vw, 4.4rem); font-weight: 900; line-height: 1.3; max-width: 20ch; margin: 0; }
+  .office { margin-top: 30px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+  @media (max-width: 900px) { .story { grid-template-columns: 1fr; } }
+</style>

@@ -1,0 +1,128 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE } from '../data/site';
+import { type Lang, dirOf, href, t } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+  title: string;
+  description: string;
+  /** Page path without the language prefix, e.g. '/features'. */
+  path: string;
+  /** Per-language paths when they differ (blog posts); null = no counterpart. */
+  alternates?: Partial<Record<Lang, string | null>>;
+  type?: 'website' | 'article';
+  image?: string;
+  jsonLd?: object[];
+  noindex?: boolean;
+  /** Scene the page opens in (see global.css). */
+  scene?: string;
+  /** Article dates for og:article. */
+  published?: Date;
+  modified?: Date;
+}
+
+const {
+  lang, title, description, path, alternates, type = 'website', image = '/og.png',
+  jsonLd = [], noindex = false, scene = 'ink', published, modified,
+} = Astro.props;
+
+const alt: Record<Lang, string | null> = {
+  fa: alternates && 'fa' in alternates ? alternates.fa ?? null : href('fa', path),
+  en: alternates && 'en' in alternates ? alternates.en ?? null : href('en', path),
+};
+const canonical = new URL(alt[lang] ?? href(lang, path), SITE.url).href;
+const fullTitle = path === '/' ? title : `${title} | ${lang === 'fa' ? 'نیلیکس' : 'nilix'}`;
+const ogImage = new URL(image, SITE.url).href;
+
+const org = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  '@id': `${SITE.url}/#org`,
+  name: 'nilix',
+  alternateName: 'نیلیکس',
+  url: SITE.url,
+  logo: `${SITE.url}/apple-touch-icon.png`,
+  email: SITE.contact.email,
+  telephone: SITE.contact.phoneIntl,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: lang === 'fa' ? SITE.contact.addressFa : SITE.contact.addressEn,
+    addressLocality: SITE.contact.city,
+    addressCountry: 'IR',
+  },
+  contactPoint: [{
+    '@type': 'ContactPoint',
+    telephone: SITE.contact.phoneIntl,
+    email: SITE.contact.email,
+    contactType: 'customer support',
+    areaServed: ['IR', 'Worldwide'],
+    availableLanguage: ['fa', 'en'],
+  }],
+};
+const site = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': `${SITE.url}/#site`,
+  name: lang === 'fa' ? 'نیلیکس' : 'nilix',
+  url: SITE.url,
+  inLanguage: lang === 'fa' ? 'fa-IR' : 'en',
+  publisher: { '@id': `${SITE.url}/#org` },
+};
+const graph = [org, site, ...jsonLd];
+---
+<!doctype html>
+<html lang={lang} dir={dirOf(lang)} data-scene={scene}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    {alt.fa && <link rel="alternate" hreflang="fa-IR" href={new URL(alt.fa, SITE.url).href} />}
+    {alt.en && <link rel="alternate" hreflang="en" href={new URL(alt.en, SITE.url).href} />}
+    {alt.fa && <link rel="alternate" hreflang="x-default" href={new URL(alt.fa, SITE.url).href} />}
+    <link rel="alternate" type="application/rss+xml" title={lang === 'fa' ? 'مقالات نیلیکس' : 'nilix blog'} href={href(lang, '/rss.xml')} />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={lang === 'fa' ? 'نیلیکس' : 'nilix'} />
+    <meta property="og:locale" content={lang === 'fa' ? 'fa_IR' : 'en_US'} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    {published && <meta property="article:published_time" content={published.toISOString()} />}
+    {modified && <meta property="article:modified_time" content={modified.toISOString()} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <meta name="theme-color" content="#0b0e13" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preload" href={lang === 'fa' ? '/fonts/vazirmatn-arabic-wght-normal.woff2' : '/fonts/vazirmatn-latin-wght-normal.woff2'} as="font" type="font/woff2" crossorigin />
+    <script is:inline>
+      // Motion is opt-out: reduced-motion visitors get the static page.
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('motion');
+    </script>
+    <script type="application/ld+json" set:html={JSON.stringify(graph)} />
+  </head>
+  <body>
+    <a class="skip" href="#main">{t(lang, 'skip')}</a>
+    <Header lang={lang} path={path} alt={alt} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer lang={lang} />
+    <script>
+      import '../scripts/motion';
+    </script>
+  </body>
+</html>
